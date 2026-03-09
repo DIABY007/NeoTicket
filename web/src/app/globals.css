@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f8fa;
+  --foreground: #111111;
+  --neo-teal: #0d9488;
+  --neo-green: #84cc16;
+  --neo-gradient: linear-gradient(135deg, #0d9488 0%, #84cc16 100%);
+  --neo-gradient-subtle: linear-gradient(135deg, rgba(13,148,136,0.08) 0%, rgba(132,204,22,0.08) 100%);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-neo-teal: #0d9488;
+  --color-neo-green: #84cc16;
+  --color-neo-teal-dark: #0f766e;
+  --color-neo-green-dark: #65a30d;
+  --font-sans: var(--font-poppins);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-poppins), 'Poppins', sans-serif;
+}
+
+/* ── NeoTicket Gradient Utilities ── */
+.neo-gradient {
+  background: var(--neo-gradient);
+}
+
+.neo-gradient-text {
+  background: var(--neo-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.neo-gradient-border {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.neo-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--neo-gradient);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.neo-btn {
+  background: var(--neo-gradient);
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.neo-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+}
+
+.neo-btn:active {
+  transform: scale(0.98);
+}
+
+.neo-btn:disabled {
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.neo-price {
+  background: var(--neo-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+}
+
+.neo-card {
+  background: white;
+  border: 1px solid rgba(0,0,0,0.06);
+  transition: all 0.2s ease;
+}
+
+.neo-card:hover {
+  border-color: rgba(13,148,136,0.25);
+  box-shadow: 0 4px 20px rgba(13,148,136,0.08);
+}
+
+.neo-input {
+  border: 1px solid rgba(0,0,0,0.1);
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.neo-input:focus {
+  border-color: var(--neo-teal);
+  box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
+  outline: none;
+}
+
+.neo-badge-success {
+  background: linear-gradient(135deg, rgba(13,148,136,0.12) 0%, rgba(132,204,22,0.12) 100%);
+  color: #0f766e;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@utility animate-toast-in {
+  animation: toast-in 0.25s ease-out;
+}
