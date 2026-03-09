@@ -2,12 +2,14 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { APP_SESSION_COOKIE } from "@/lib/auth/constants";
+import { buildMarketingSlug, normalizeEventSlug } from "@/lib/event-slug";
 import { normalizeRoles } from "@/lib/auth/roles";
 import { parseAppSessionToken } from "@/lib/auth/session";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 type EventRecord = {
   id: string;
+  slug: string;
   organizer_id: string;
   title: string;
   description: string | null;
@@ -20,6 +22,52 @@ type EventRecord = {
   status: "draft" | "published" | "ended" | "cancelled";
   image_url: string | null;
 };
+
+async function resolveUniqueSlug({
+  supabase,
+  requestedSlug,
+  title,
+  city,
+  date,
+  excludeEventId,
+}: {
+  supabase: ReturnType<typeof getSupabaseServerClient>;
+  requestedSlug: string;
+  title: string;
+  city: string;
+  date: Date;
+  excludeEventId: string;
+}) {
+  const base =
+    normalizeEventSlug(requestedSlug) ||
+    buildMarketingSlug({ title, city, date: date.toISOString() });
+
+  if (!base) {
+    return null;
+  }
+
+  let candidate = base;
+  for (let i = 0; i < 30; i += 1) {
+    const { data, error } = await supabase
+      .from("events")
+      .select("id")
+      .eq("slug", candidate)
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+
+    if (error) {
+      return null;
+    }
+
+    if (!data || data.id === excludeEventId) {
+      return candidate;
+    }
+
+    candidate = `${base}-${i + 2}`;
+  }
+
+  return null;
+}
 
 async function getSession() {
   const secret = process.env.OTP_SIGNING_SECRET;
@@ -59,7 +107,7 @@ export async function GET(
 
   let query = supabase
     .from("events")
-    .select("id, organizer_id, title, description, city, date, end_date, price, official_price, organizer_price, status, image_url")
+    .select("id, slug, organizer_id, title, description, city, date, end_date, price, official_price, organizer_price, status, image_url")
     .eq("id", id)
     .limit(1);
 
@@ -112,6 +160,7 @@ export async function PATCH(
     endDate?: string | null;
     officialPrice?: number;
     organizerPrice?: number;
+    slug?: string;
     status?: "draft" | "published" | "ended" | "cancelled";
   };
 
@@ -124,6 +173,7 @@ export async function PATCH(
   const endDateRaw = String(body.endDate ?? "").trim();
   const officialPrice = Number(body.officialPrice ?? NaN);
   const organizerPrice = Number(body.organizerPrice ?? NaN);
+  const requestedSlug = String(body.slug ?? "").trim();
   const status = body.status;
 
   if (!title) {
@@ -200,12 +250,29 @@ export async function PATCH(
 
   const { id } = await params;
   const supabase = getSupabaseServerClient();
+  const slug = await resolveUniqueSlug({
+    supabase,
+    requestedSlug,
+    title,
+    city,
+    date: startDate,
+    excludeEventId: id,
+  });
+
+  if (!slug) {
+    return NextResponse.json(
+      { success: false, error: "Slug invalide ou deja utilise." },
+      { status: 400 },
+    );
+  }
+
   const isAdmin = roles.includes("admin");
 
   let updateQuery = supabase
     .from("events")
     .update({
       title,
+      slug,
       description: description || null,
       city,
       date: startDate.toISOString(),
@@ -216,7 +283,7 @@ export async function PATCH(
       status,
     })
     .eq("id", id)
-    .select("id, organizer_id, title, description, city, date, end_date, price, official_price, organizer_price, status, image_url")
+    .select("id, slug, organizer_id, title, description, city, date, end_date, price, official_price, organizer_price, status, image_url")
     .limit(1);
 
   if (!isAdmin) {

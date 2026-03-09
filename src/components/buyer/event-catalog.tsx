@@ -4,8 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { buildEventSlug } from "@/lib/event-slug";
+
 type BuyerEvent = {
   id: string;
+  slug?: string;
   title: string;
   description: string | null;
   date: string;
@@ -395,7 +398,7 @@ export function EventCatalog({ events }: { events: BuyerEvent[] }) {
 
       {/* ── Event cards grid ── */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredEvents.map((event) => {
+        {filteredEvents.map((event, eventIndex) => {
           const { day, month } = formatDateBadge(event.date);
           const hasDiscount = event.final_price < event.official_price;
           const totalDiscountPercent = hasDiscount
@@ -405,7 +408,7 @@ export function EventCatalog({ events }: { events: BuyerEvent[] }) {
           return (
             <Link
               key={event.id}
-              href={`/events/${event.id}`}
+              href={`/e/${event.slug ?? buildEventSlug(event)}`}
               className="group block overflow-hidden rounded-2xl border border-black/6 bg-white transition-all duration-200 active:scale-[0.98] hover:shadow-lg hover:border-neo-teal/20"
             >
               {/* Image container with fixed aspect ratio */}
@@ -413,8 +416,10 @@ export function EventCatalog({ events }: { events: BuyerEvent[] }) {
                 {event.image_url ? (
                   <Image
                     src={event.image_url}
-                    alt={`Affiche ${event.title}`}
+                    alt={`Affiche de l'evenement ${event.title}`}
                     fill
+                    priority={eventIndex === 0}
+                    fetchPriority={eventIndex === 0 ? "high" : undefined}
                     className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />

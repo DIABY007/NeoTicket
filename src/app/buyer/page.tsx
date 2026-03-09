@@ -7,6 +7,7 @@ export const revalidate = 0;
 
 type BuyerEvent = {
   id: string;
+  slug: string;
   title: string;
   description: string | null;
   date: string;
@@ -28,7 +29,7 @@ export default async function BuyerPage() {
 
   const { data, error } = await supabase
     .from("events")
-    .select("id, title, description, date, end_date, price, official_price, organizer_price, city, image_url, status")
+    .select("id, slug, title, description, date, end_date, price, official_price, organizer_price, city, image_url, status")
     .eq("status", "published")
     .order("date", { ascending: true })
     .returns<Omit<BuyerEvent, "platform_discount_percent" | "organizer_discount_percent" | "final_price">[]>();

@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { APP_SESSION_COOKIE } from "@/lib/auth/constants";
+import { buildMarketingSlug, normalizeEventSlug } from "@/lib/event-slug";
 import { normalizeRoles } from "@/lib/auth/roles";
 import { parseAppSessionToken } from "@/lib/auth/session";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -12,6 +13,50 @@ const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 
 function sanitizeFilename(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9.-]/g, "-");
+}
+
+async function resolveUniqueSlug({
+  supabase,
+  requestedSlug,
+  title,
+  city,
+  date,
+}: {
+  supabase: ReturnType<typeof getSupabaseServerClient>;
+  requestedSlug: string;
+  title: string;
+  city: string;
+  date: Date;
+}) {
+  const base =
+    normalizeEventSlug(requestedSlug) ||
+    buildMarketingSlug({ title, city, date: date.toISOString() });
+
+  if (!base) {
+    return null;
+  }
+
+  let candidate = base;
+  for (let i = 0; i < 30; i += 1) {
+    const { data, error } = await supabase
+      .from("events")
+      .select("id")
+      .eq("slug", candidate)
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+
+    if (error) {
+      return null;
+    }
+
+    if (!data) {
+      return candidate;
+    }
+
+    candidate = `${base}-${i + 2}`;
+  }
+
+  return null;
 }
 
 export async function POST(request: Request) {
@@ -72,6 +117,7 @@ export async function POST(request: Request) {
       .replace(/\s+/g, " ");
     const officialPriceRaw = String(formData.get("officialPrice") ?? "").trim();
     const organizerPriceRaw = String(formData.get("organizerPrice") ?? "").trim();
+    const slugRaw = String(formData.get("slug") ?? "").trim();
     const omReceiverPhoneRaw = String(formData.get("omReceiverPhone") ?? "").trim();
     const file = formData.get("image");
 
@@ -185,6 +231,24 @@ export async function POST(request: Request) {
     }
 
     const supabase = getSupabaseServerClient();
+    const slug = await resolveUniqueSlug({
+      supabase,
+      requestedSlug: slugRaw,
+      title,
+      city,
+      date: startDate,
+    });
+
+    if (!slug) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Slug invalide ou indisponible. Essayez une variante.",
+        },
+        { status: 400 },
+      );
+    }
+
     const bucket = process.env.SUPABASE_STORAGE_EVENTS_BUCKET || "event-posters";
 
     const eventId = crypto.randomUUID();
@@ -227,6 +291,7 @@ export async function POST(request: Request) {
         title,
         description: description || null,
         city,
+        slug,
         venue: venue || null,
         date: startDate.toISOString(),
         end_date: endDate ? endDate.toISOString() : null,
@@ -237,7 +302,7 @@ export async function POST(request: Request) {
         image_url: imageUrl,
         status: "published",
       })
-      .select("id, title, date, end_date, price, official_price, organizer_price, city, venue, om_receiver_phone, status, image_url")
+      .select("id, slug, title, date, end_date, price, official_price, organizer_price, city, venue, om_receiver_phone, status, image_url")
       .single();
 
     if (error) {

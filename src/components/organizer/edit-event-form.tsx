@@ -7,6 +7,7 @@ type EventStatus = "draft" | "published" | "ended" | "cancelled";
 
 type EditableEvent = {
   id: string;
+  slug: string;
   title: string;
   description: string | null;
   city: string | null;
@@ -36,6 +37,7 @@ export function EditEventForm({ eventId }: { eventId: string }) {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [slug, setSlug] = useState("");
   const [city, setCity] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -73,6 +75,7 @@ export function EditEventForm({ eventId }: { eventId: string }) {
         setEventData(nextEvent);
         setTitle(nextEvent.title);
         setDescription(nextEvent.description ?? "");
+        setSlug(nextEvent.slug ?? "");
         setCity(nextEvent.city ?? "");
         setStartDate(toLocalDateTimeInput(nextEvent.date));
         setEndDate(toLocalDateTimeInput(nextEvent.end_date));
@@ -120,6 +123,7 @@ export function EditEventForm({ eventId }: { eventId: string }) {
         body: JSON.stringify({
           title,
           description,
+          slug,
           city,
           startDate,
           endDate: endDate || null,
@@ -185,6 +189,17 @@ export function EditEventForm({ eventId }: { eventId: string }) {
             onChange={(event) => setDescription(event.target.value)}
             rows={4}
             maxLength={1000}
+            className="neo-input rounded-xl px-3 py-3"
+          />
+        </label>
+
+        <label className="grid gap-1 text-sm">
+          <span className="font-medium">URL marketing (slug)</span>
+          <input
+            value={slug}
+            onChange={(event) => setSlug(event.target.value)}
+            required
+            maxLength={120}
             className="neo-input rounded-xl px-3 py-3"
           />
         </label>

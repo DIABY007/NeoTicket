@@ -25,6 +25,7 @@ export function CreateEventForm({
   /* ---- form fields ---- */
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [slug, setSlug] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -88,6 +89,7 @@ export function CreateEventForm({
       const fd = new FormData();
       fd.set("title", title.trim());
       fd.set("description", description.trim());
+      if (slug.trim()) fd.set("slug", slug.trim());
       fd.set("city", effectiveCity);
       if (venue.trim()) fd.set("venue", venue.trim());
       fd.set("startDate", startDate);
@@ -117,6 +119,7 @@ export function CreateEventForm({
       setCreatedEvent(data.event ?? null);
       setTitle("");
       setDescription("");
+      setSlug("");
       removeImage();
       setSelectedCity("");
       setCustomCity("");
@@ -170,6 +173,22 @@ export function CreateEventForm({
               placeholder="Programme, details pratiques, dress code..."
               className="mt-1 w-full resize-none neo-input rounded-xl px-4 py-3 text-base"
             />
+          </label>
+
+          <label className="block text-sm">
+            <span className="font-medium">
+              URL marketing (slug) <span className="font-normal text-black/40">(optionnel)</span>
+            </span>
+            <input
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              maxLength={120}
+              placeholder="concert-floby-ouaga-2026"
+              className="mt-1 w-full neo-input rounded-xl px-4 py-3 text-base"
+            />
+            <span className="mt-1 block text-xs text-black/50">
+              Utilisez lettres, chiffres et tirets. NeoTicket garantit un slug unique.
+            </span>
           </label>
 
           {/* Affiche — zone de depot visuelle */}

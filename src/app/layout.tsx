@@ -9,7 +9,8 @@ import "./globals.css";
 const poppins = Poppins({
   variable: "--font-poppins",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -17,10 +18,32 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://neoticket.live";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "NeoTicket",
-  description: "MVP billetterie mobile-first Burkina Faso",
+  description: "Billetterie en ligne au Burkina Faso. Paiement Orange Money et QR Code sur WhatsApp.",
   manifest: "/manifest.webmanifest",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "NeoTicket",
+    description: "Billetterie en ligne au Burkina Faso. Paiement Orange Money et QR Code sur WhatsApp.",
+    url: "/",
+    siteName: "NeoTicket",
+    locale: "fr_BF",
+    type: "website",
+    images: [
+      {
+        url: "/logo.svg",
+        width: 1200,
+        height: 630,
+        alt: "NeoTicket",
+      },
+    ],
+  },
   icons: {
     icon: "/logo.svg",
     apple: "/logo.svg",
@@ -37,9 +60,9 @@ export default function RootLayout({
       <head>
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-WY9D4NBWCG"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
-        <Script id="google-analytics" strategy="afterInteractive">
+        <Script id="google-analytics" strategy="lazyOnload">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
