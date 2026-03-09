@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { BuyTicketButton } from "@/components/buyer/buy-ticket-button";
 import { EventPageActions } from "@/components/buyer/event-page-actions";
+import { cityLabelToSlug } from "@/lib/event-slug";
 import {
   computeFinalPrice,
   computeOrganizerDiscountPercent,
@@ -11,8 +12,7 @@ import {
 } from "@/lib/pricing";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 300;
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://neoticket.live";
 
@@ -64,8 +64,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!event) {
     return {
-      title: "Evenement introuvable | NeoTicket",
-      description: "Cet evenement n'est plus disponible sur NeoTicket.",
+      title: "Événement introuvable | NeoTicket",
+      description: "Cet événement n'est plus disponible sur NeoTicket.",
       robots: {
         index: false,
         follow: false,
@@ -75,8 +75,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const dateLabel = formatEventDate(event.date);
   const cityLabel = event.city ?? "Burkina Faso";
-  const title = `${event.title} - Billets & Tickets a ${cityLabel} | NeoTicket`;
-  const description = `Achetez vos billets pour ${event.title} le ${dateLabel} a ${cityLabel}. Paiement securise via Orange Money. Recevez votre QR Code par WhatsApp.`;
+  const title = `${event.title} — Billets & Tickets à ${cityLabel}`;
+  const description = `Achetez vos billets pour ${event.title} le ${dateLabel} à ${cityLabel}. Paiement sécurisé via Orange Money. Recevez votre QR Code par WhatsApp.`;
   const canonicalPath = `/e/${slug}`;
 
   return {
@@ -119,9 +119,9 @@ export default async function EventDetailsBySlugPage({ params }: Props) {
     return (
       <main className="min-h-screen px-4 py-6">
         <section className="mx-auto max-w-3xl rounded-2xl border border-black/6 bg-white p-6">
-          <h1 className="text-2xl font-bold">Evenement introuvable</h1>
+          <h1 className="text-2xl font-bold">Événement introuvable</h1>
           <p className="mt-2 text-sm text-black/70">
-            L&apos;evenement demande n&apos;existe pas ou n&apos;est plus disponible.
+            L&apos;événement demandé n&apos;existe pas ou n&apos;est plus disponible.
           </p>
           <Link href="/events" className="neo-btn mt-4 inline-block rounded-xl px-4 py-2 text-sm">
             Retour au catalogue
@@ -158,7 +158,7 @@ export default async function EventDetailsBySlugPage({ params }: Props) {
           : "https://schema.org/EventScheduled",
     location: {
       "@type": "Place",
-      name: data.venue ?? data.city ?? "Lieu a confirmer",
+      name: data.venue ?? data.city ?? "Lieu à confirmer",
       address: {
         "@type": "PostalAddress",
         addressLocality: data.city ?? "Burkina Faso",
@@ -194,7 +194,7 @@ export default async function EventDetailsBySlugPage({ params }: Props) {
       {
         "@type": "ListItem",
         position: 2,
-        name: "Evenements",
+        name: "Événements",
         item: `${siteUrl}/events`,
       },
       {
@@ -222,6 +222,28 @@ export default async function EventDetailsBySlugPage({ params }: Props) {
         <h1 className="mt-3 text-2xl font-bold">{data.title}</h1>
         <p className="mt-1 text-sm text-black/70">{formatEventDate(data.date)}</p>
 
+        {data.city ? (
+          <p className="mt-1 text-sm text-black/60">
+            <Link
+              href={`/events/${cityLabelToSlug(data.city)}`}
+              className="underline underline-offset-2 hover:text-neo-teal transition-colors"
+            >
+              {data.city}
+            </Link>
+            {data.venue ? ` · ${data.venue}` : null}
+          </p>
+        ) : null}
+
+        {data.status === "ended" ? (
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800">
+            Cet événement est terminé.
+          </div>
+        ) : data.status === "cancelled" ? (
+          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+            Cet événement a été annulé.
+          </div>
+        ) : null}
+
         {data.image_url ? (
           <Image
             src={data.image_url}
@@ -238,7 +260,7 @@ export default async function EventDetailsBySlugPage({ params }: Props) {
         )}
 
         <p className="mt-4 whitespace-pre-line text-sm text-black/80">
-          {data.description || "Description non renseignee."}
+          {data.description || "Description non renseignée."}
         </p>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-black/6 bg-gradient-to-br from-neo-teal/[0.03] to-neo-green/[0.03] px-4 py-3">

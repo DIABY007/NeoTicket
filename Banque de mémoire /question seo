@@ -1,0 +1,291 @@
+Analyse le projet et dis-moi :
+
+1. Est-ce que toutes les pages publiques importantes sont crawlables par Google ?
+2. Y a-t-il des pages bloquées par robots.txt ou meta robots noindex ?
+3. Est-ce que certaines pages importantes sont générées uniquement côté client ?
+4. Est-ce que le contenu principal des pages événements est visible dans le HTML serveur ?
+```
+
+Si Cursor répond :
+
+> contenu chargé via useEffect
+
+➡️ **SEO cassé.**
+
+---
+
+# 2️⃣ Rendering (critique avec Next.js)
+
+```
+Analyse toutes les routes publiques et dis-moi :
+
+1. Quelles pages utilisent SSR, SSG ou ISR ?
+2. Quelles pages sont client-side uniquement ?
+3. Les pages /events et /e/[slug] sont-elles rendues côté serveur ?
+4. Est-ce que des données SEO sont chargées uniquement via fetch client ?
+```
+
+**Tout ce qui est SEO doit être SSR.**
+
+---
+
+# 3️⃣ Metadata dynamiques
+
+```
+Vérifie la génération des metadata dans le projet :
+
+1. Est-ce que chaque page événement génère un title unique ?
+2. Est-ce que les meta descriptions sont dynamiques ?
+3. Est-ce que generateMetadata() est utilisé dans Next.js ?
+4. Y a-t-il des pages avec title ou description manquants ?
+```
+
+Red flag classique :
+
+```
+<title>NeoTicket</title>
+```
+
+sur toutes les pages.
+
+---
+
+# 4️⃣ Slugs SEO
+
+```
+Analyse la structure des URLs :
+
+1. Les URLs d'événements utilisent-elles un slug SEO ?
+2. Y a-t-il des IDs numériques dans les URLs ?
+3. Les URLs sont-elles propres et lisibles ?
+4. Y a-t-il des paramètres inutiles dans les URLs indexables ?
+```
+
+Bon :
+
+```
+/e/concert-floby-ouagadougou
+```
+
+Mauvais :
+
+```
+/event?id=482991
+```
+
+---
+
+# 5️⃣ Sitemap
+
+```
+Analyse la génération du sitemap.xml :
+
+1. Le sitemap inclut-il toutes les pages événements ?
+2. Les pages villes et catégories sont-elles incluses ?
+3. Les pages expirées sont-elles exclues ou gérées ?
+4. Le sitemap est-il dynamique ?
+```
+
+Un sitemap statique sur une billetterie = **erreur**.
+
+---
+
+# 6️⃣ Données structurées
+
+```
+Vérifie les données structurées schema.org :
+
+1. Les pages événements utilisent-elles le schema Event ?
+2. Les prix et disponibilités sont-ils inclus ?
+3. Le lieu et la date sont-ils présents ?
+4. Le JSON-LD est-il injecté côté serveur ?
+```
+
+Sans `Event schema`, Google **ne comprend pas ton site**.
+
+---
+
+# 7️⃣ Open Graph
+
+```
+Analyse les balises Open Graph :
+
+1. Chaque événement possède-t-il un og:title unique ?
+2. Les images og:image sont-elles dynamiques ?
+3. Les dimensions des images sont-elles optimisées pour le partage ?
+4. Les URLs sont-elles correctes ?
+```
+
+Important car :
+
+**WhatsApp = énorme trafic en Afrique.**
+
+---
+
+# 8️⃣ Performance SEO
+
+```
+Analyse les performances SEO :
+
+1. Quelle est la taille moyenne du HTML initial ?
+2. Y a-t-il des images non optimisées ?
+3. Le lazy loading est-il activé ?
+4. Les pages événements dépassent-elles 2.5s LCP ?
+```
+
+Si la page met **4-5 secondes à charger**, le SEO chute.
+
+---
+
+# 9️⃣ Maillage interne
+
+```
+Analyse les liens internes :
+
+1. Les pages événements lient-elles vers les pages ville ?
+2. Les pages ville lient-elles vers les événements ?
+3. Les organisateurs ont-ils une page liée ?
+4. Y a-t-il des pages orphelines ?
+```
+
+Pages orphelines = **Google ne les trouve jamais**.
+
+---
+
+# 🔟 SEO Programmatique
+
+```
+Analyse l'architecture du site :
+
+1. Existe-t-il des pages pour les villes ?
+2. Existe-t-il des pages pour les types d'événements ?
+3. Existe-t-il des pages combinées ville + catégorie ?
+4. Le site peut-il générer automatiquement ces pages ?
+```
+
+Sans ça, tu perds **90% du trafic SEO possible**.
+
+---
+
+# 11️⃣ Canonical
+
+```
+Vérifie les balises canonical :
+
+1. Chaque page possède-t-elle un canonical ?
+2. Y a-t-il des duplications d'URL ?
+3. Les paramètres d'URL créent-ils du duplicate content ?
+```
+
+---
+
+# 12️⃣ Gestion des événements expirés
+
+```
+Analyse comment le site gère les événements passés :
+
+1. Les pages sont-elles supprimées ?
+2. Sont-elles redirigées ?
+3. Ou conservées avec contenu mis à jour ?
+```
+
+Supprimer = **perdre le ranking SEO**.
+
+---
+
+# 13️⃣ Robots.txt
+
+```
+Analyse robots.txt :
+
+1. Est-ce que les pages admin sont bloquées ?
+2. Les pages scanner sont-elles bloquées ?
+3. Les pages utilisateurs sont-elles bloquées ?
+4. Les pages SEO importantes sont-elles autorisées ?
+```
+
+---
+
+# 14️⃣ Images SEO
+
+```
+Analyse les images :
+
+1. Les images ont-elles un alt text ?
+2. Les images événement utilisent-elles next/image ?
+3. Les images OG sont-elles optimisées ?
+```
+
+
+
+#### Audit technique et indexation
+- **Robots / Sitemap** — Le `sitemap.xml` est-il généré automatiquement à chaque déploiement et exclut‑il `draft`/`cancelled` ?  
+- **Robots.txt** — Le fichier pointe‑t‑il vers le sitemap et bloque-t‑il correctement les routes admin/scanner/buyer privées ?  
+- **Canonical** — Les variantes d’URL (slash final, paramètres, www/non‑www, http/https) sont‑elles toutes canonicalisées et redirigées 301 ?  
+- **Indexation massive** — Les pages programmatique (ville/type/date) sont‑elles créées en SSR/ISR et soumises au sitemap sans dépasser les quotas d’indexation ?  
+- **Faceted navigation** — Les pages de filtres et tri inutiles sont‑elles `noindex,follow` ou bloquées pour éviter le contenu dupliqué ?
+
+---
+
+#### Pages événement (template / generateMetadata)
+- **Metadata dynamique** — `generateMetadata()` produit‑t‑il `title`, `description`, `og:*`, `twitter:*` et `alternates.canonical` pour chaque `/e/[slug]` ?  
+- **Title/Description** — Les templates respectent‑ils le format demandé (`[Nom] à [Ville] – Billets & Tickets | NeoTicket`) et la description transactionnelle (OM, QR WhatsApp) ?  
+- **Images LCP** — L’affiche est‑elle servie via `next/image` avec `priority` et un `<link rel="preload">` pour LCP ?  
+- **Pre-rendering** — Les pages événements critiques sont‑elles SSR ou ISR avec `revalidate: 300` et fallback contrôlé ?
+
+---
+
+#### Données structurées et rich snippets
+- **JSON‑LD complet** — Chaque page événement injecte‑t‑elle `Event`, `Offer`, `Place`, `Organization`, `BreadcrumbList` et `FAQPage` quand pertinent ?  
+- **Champs monétaires** — Les `offers.priceCurrency` sont bien `XOF` et `offers.availability` utilise les URLs schema.org correctes ?  
+- **Validation** — Les JSON‑LD passent‑ils automatiquement les tests Rich Results et l’outil de validation Schema en CI ?
+
+---
+
+#### SEO programmatique et long‑tail
+- **Génération de pages** — Les pages par ville/type/date/combinaisons sont‑elles générées automatiquement à partir du modèle de données (events.city, events.type, month) ?  
+- **Pagination & canonical** — Les pages paginées ont‑elles `rel="next/prev"` et canonical vers la page 1 quand nécessaire ?  
+- **Volume & crawl budget** — Avez‑vous une stratégie pour limiter la création de pages à faible valeur (ex. mois vides) afin de préserver le crawl budget ?
+
+---
+
+#### Organisateurs, lieux et maillage interne
+- **Pages organizer/venue** — Chaque organisateur et lieu a‑t‑il une page indexable avec événements passés/à venir et metadata dédiée ?  
+- **Maillage** — Les pages événements lient‑elles systématiquement vers la page ville, la page type, l’organisateur et le lieu ?  
+- **Breadcrumbs** — Le fil d’Ariane est‑il visible et présent en JSON‑LD `BreadcrumbList` ?
+
+---
+
+#### Social, Open Graph et WhatsApp
+- **OG tags** — `og:title`, `og:description`, `og:image` (1200×630) et `og:url` sont‑ils générés dynamiquement pour chaque événement ?  
+- **Image preview** — L’affiche partagée via Wasender/WhatsApp affiche‑t‑elle correctement le crop 1200×630 et contient‑elle `og:width/height` ?  
+- **Fallbacks** — En cas d’échec d’envoi d’image, existe‑t‑il un fallback texte/URL pour la prévisualisation ?
+
+---
+
+#### Performance PWA et mobile
+- **Lighthouse** — Les pages événement atteignent‑elles les objectifs : Performance > 90, Accessibility > 90, SEO > 95 ?  
+- **Service Worker** — Le SW implémente‑t‑il une stratégie **cache‑first** pour le shell et les affiches, avec offline fallback ?  
+- **Images & CDN** — Les affiches Supabase sont‑elles servies via CDN, converties en WebP/AVIF et compressées à la volée ?
+
+---
+
+#### Flux d’achat, pages privées et sécurité SEO
+- **Pages privées** — Les routes `/buyer/*`, `/admin/*`, `/scanner/*` sont‑elles bloquées pour les robots et exclues du sitemap ?  
+- **Pages d’état d’événement** — Les événements `ended` affichent‑ils un message clair « Cet événement est terminé » et restent‑ils indexés ?  
+- **Paramètres de paiement** — Les pages contenant des paramètres USSD ou données sensibles ne sont‑elles jamais indexables ?
+
+---
+
+#### Monitoring, tests et CI
+- **Tests automatiques** — Y a‑t‑il des checks CI pour : schema.org validation, OG preview, sitemap freshness, LCP threshold ?  
+- **GSC & GA4** — Le site est‑il connecté à Google Search Console et GA4 (`NEXT_PUBLIC_GA_ID`) et les pages clés sont‑elles surveillées (clics, impressions, CTR) ?  
+- **Alerting** — Avez‑vous des alertes pour chute de position, erreurs d’extraction de schema, ou LCP > 2.5s ?
+
+---
+
+#### Checklist pré‑déploiement (contrôles rapides)
+- **Meta & OG** — Tous les nouveaux événements ont‑ils title, description, og:image et JSON‑LD valides ?  
+- **Sitemap** — Le sitemap inclut‑il les nouvelles pages et exclut‑il les drafts/cancelled ?  
+- **Canonical & Redirects** — Les redirections 301 et canonical sont‑elles testées pour les variantes d’URL ?  
+- **Accessibilité** — Les pages utilisent‑elles des balises sémantiques (`main`, `article`, `section`) et des `alt` conformes (`Affiche de l'événement [Nom]`) ?

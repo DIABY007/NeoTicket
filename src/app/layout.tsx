@@ -22,27 +22,20 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://neoticket.live";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "NeoTicket",
-  description: "Billetterie en ligne au Burkina Faso. Paiement Orange Money et QR Code sur WhatsApp.",
+  title: {
+    default: "NeoTicket — Billetterie en ligne au Burkina Faso",
+    template: "%s | NeoTicket",
+  },
+  description:
+    "Billetterie en ligne au Burkina Faso. Paiement sécurisé Orange Money et QR Code sur WhatsApp.",
   manifest: "/manifest.webmanifest",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "NeoTicket",
-    description: "Billetterie en ligne au Burkina Faso. Paiement Orange Money et QR Code sur WhatsApp.",
-    url: "/",
     siteName: "NeoTicket",
     locale: "fr_BF",
     type: "website",
-    images: [
-      {
-        url: "/logo.svg",
-        width: 1200,
-        height: 630,
-        alt: "NeoTicket",
-      },
-    ],
   },
   icons: {
     icon: "/logo.svg",

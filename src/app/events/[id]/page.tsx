@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { EventCatalog } from "@/components/buyer/event-catalog";
@@ -12,6 +13,8 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://neoticket.live";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -87,17 +90,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const city = citySlugToLabel(id);
   return {
-    title: `Evenements a ${city} - Billets & Tickets | NeoTicket`,
-    description: `Decouvrez les evenements a ${city}. Achetez vos tickets via Orange Money et recevez votre QR Code sur WhatsApp.`,
+    title: `Événements à ${city} — Billets & Tickets`,
+    description: `Découvrez les événements à ${city}. Achetez vos tickets via Orange Money et recevez votre QR Code sur WhatsApp.`,
     alternates: {
       canonical: `/events/${id}`,
     },
     openGraph: {
-      title: `Evenements a ${city} - Billets & Tickets | NeoTicket`,
-      description:
-        "Billetterie locale avec paiement Orange Money et reception ticket QR sur WhatsApp.",
+      title: `Événements à ${city} — Billets & Tickets | NeoTicket`,
+      description: `Billetterie locale à ${city} avec paiement Orange Money et réception ticket QR sur WhatsApp.`,
       url: `/events/${id}`,
       type: "website",
+      images: [
+        {
+          url: "/logo.svg",
+          width: 1200,
+          height: 630,
+          alt: `Événements à ${city} — NeoTicket`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Événements à ${city} — Billets & Tickets | NeoTicket`,
+      description: `Découvrez les événements à ${city}. Paiement Orange Money et QR Code WhatsApp.`,
     },
   };
 }
@@ -126,10 +141,31 @@ export default async function EventsDynamicSegmentPage({ params }: Props) {
     (event) => cityLabelToSlug(event.city ?? "") === citySlug,
   );
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "Événements", item: `${siteUrl}/events` },
+      { "@type": "ListItem", position: 3, name: cityLabel, item: `${siteUrl}/events/${citySlug}` },
+    ],
+  };
+
   return (
     <main className="min-h-screen p-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <section className="mx-auto w-full max-w-6xl">
-        <h1 className="text-2xl font-semibold">Evenements a {cityLabel}</h1>
+        <nav className="mb-4 text-sm text-black/60" aria-label="Fil d'Ariane">
+          <Link href="/" className="hover:text-neo-teal transition-colors">Accueil</Link>
+          <span className="mx-1.5">/</span>
+          <Link href="/events" className="hover:text-neo-teal transition-colors">Événements</Link>
+          <span className="mx-1.5">/</span>
+          <span className="text-black/90 font-medium">{cityLabel}</span>
+        </nav>
+        <h1 className="text-2xl font-semibold">Événements à {cityLabel}</h1>
         <p className="mt-1 text-sm text-black/70">
           Explorez les prochaines sorties et achetez vos billets en ligne.
         </p>
