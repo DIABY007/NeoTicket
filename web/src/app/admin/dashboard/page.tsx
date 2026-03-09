@@ -5,6 +5,9 @@ import { PlatformDiscountPanel } from "@/components/admin/platform-discount-pane
 import { requireAdminServerSession } from "@/lib/auth/admin-guard";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function AdminDashboardPage() {
   await requireAdminServerSession();
 

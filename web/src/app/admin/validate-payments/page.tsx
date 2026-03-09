@@ -1,6 +1,9 @@
 import { ValidatePaymentsPanel } from "@/components/admin/validate-payments-panel";
 import { requireAdminServerSession } from "@/lib/auth/admin-guard";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function ValidatePaymentsPage() {
   await requireAdminServerSession();
 
