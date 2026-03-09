@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { GlobalPlatformNav } from "@/components/app/global-platform-nav";
 import { Poppins, Geist_Mono } from "next/font/google";
@@ -33,6 +34,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-WY9D4NBWCG"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-WY9D4NBWCG');
+          `}
+        </Script>
+      </head>
       <body
         className={`${poppins.variable} ${geistMono.variable} antialiased pb-20`}
       >
