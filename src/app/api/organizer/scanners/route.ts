@@ -207,56 +207,43 @@ export async function POST(request: Request) {
     );
   }
 
-  let scannerUser: UserRow;
-
   if (!existingUser) {
-    const { data: createdUser, error: createUserError } = await supabase
-      .from("users")
-      .insert({
-        phone,
-        roles: ["scanner"],
-        status: "invited",
-      })
-      .select("id, phone, roles, status")
-      .single<UserRow>();
-
-    if (createUserError || !createdUser) {
-      return NextResponse.json(
-        { success: false, error: "Creation scanneur impossible." },
-        { status: 500 },
-      );
-    }
-
-    scannerUser = createdUser;
-  } else {
-    if (existingUser.status === "blocked") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Ce numero est bloque et ne peut pas etre invite.",
-        },
-        { status: 403 },
-      );
-    }
-
-    const mergedRoles = uniqueRoles([...(existingUser.roles ?? []), "scanner"]);
-
-    const { data: updatedUser, error: updateUserError } = await supabase
-      .from("users")
-      .update({ roles: mergedRoles })
-      .eq("id", existingUser.id)
-      .select("id, phone, roles, status")
-      .single<UserRow>();
-
-    if (updateUserError || !updatedUser) {
-      return NextResponse.json(
-        { success: false, error: "Mise a jour role scanneur impossible." },
-        { status: 500 },
-      );
-    }
-
-    scannerUser = updatedUser;
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Compte indisponible: aucun compte associe a ce numero.",
+      },
+      { status: 404 },
+    );
   }
+
+  if (existingUser.status === "blocked") {
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Ce numero est bloque et ne peut pas etre invite.",
+      },
+      { status: 403 },
+    );
+  }
+
+  const mergedRoles = uniqueRoles([...(existingUser.roles ?? []), "scanner"]);
+
+  const { data: updatedUser, error: updateUserError } = await supabase
+    .from("users")
+    .update({ roles: mergedRoles })
+    .eq("id", existingUser.id)
+    .select("id, phone, roles, status")
+    .single<UserRow>();
+
+  if (updateUserError || !updatedUser) {
+    return NextResponse.json(
+      { success: false, error: "Mise a jour role scanneur impossible." },
+      { status: 500 },
+    );
+  }
+
+  const scannerUser = updatedUser;
 
   const { error: linkError } = await supabase
     .from("event_scanners")
@@ -277,7 +264,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     success: true,
-    message: "Scanneur invite avec succes.",
+    message: "Compte trouve: scanneur ajoute automatiquement.",
     scanner: {
       id: scannerUser.id,
       phone: scannerUser.phone,

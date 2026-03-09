@@ -150,7 +150,7 @@ export function ScannerManagement() {
         return;
       }
 
-      setSuccess(payload.message ?? "Scanneur invite.");
+      setSuccess(payload.message ?? "Scanneur ajoute automatiquement.");
       setPhoneInput("");
 
       const refresh = await fetch(`/api/organizer/scanners?eventId=${selectedEventId}`, {
@@ -165,7 +165,7 @@ export function ScannerManagement() {
         setScanners(refreshPayload.scanners ?? []);
       }
     } catch {
-      setError("Erreur reseau pendant l'invitation du scanneur.");
+      setError("Erreur reseau pendant l'ajout du scanneur.");
     } finally {
       setIsSubmitting(false);
     }
@@ -173,9 +173,9 @@ export function ScannerManagement() {
 
   return (
     <section className="w-full rounded-2xl border border-white/10 bg-neutral-900 p-5">
-      <h2 className="text-xl font-semibold text-white">Inviter un scanneur</h2>
+      <h2 className="text-xl font-semibold text-white">Ajouter un scanneur</h2>
       <p className="mt-2 text-sm text-white/60">
-        Ajoutez un staff via numéro pour un événement précis.
+        Entrez un numero: si un compte existe, il est ajoute automatiquement.
       </p>
 
       {isLoadingEvents ? <p className="mt-4 text-sm text-white/50">Chargement...</p> : null}
@@ -222,7 +222,7 @@ export function ScannerManagement() {
             disabled={isSubmitting || events.length === 0}
             className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black disabled:opacity-60"
           >
-            {isSubmitting ? "Invitation en cours..." : "Inviter le scanneur"}
+            {isSubmitting ? "Ajout en cours..." : "Ajouter le scanneur"}
           </button>
         </form>
       ) : null}
