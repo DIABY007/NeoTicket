@@ -115,7 +115,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from("event_scanners")
-    .select("user_id, users!inner(id, phone, roles, status)")
+    .select("user_id")
     .eq("event_id", eventId);
 
   if (error) {
@@ -125,21 +125,31 @@ export async function GET(request: Request) {
     );
   }
 
-  const scanners = (data ?? [])
-    .map((row: { users: UserRow | UserRow[] }) => {
-      const user = Array.isArray(row.users) ? row.users[0] : row.users;
-      if (!user) {
-        return null;
-      }
+  const userIds = (data ?? []).map((row: { user_id: string }) => row.user_id);
 
-      return {
-        id: user.id,
-        phone: user.phone,
-        roles: user.roles ?? [],
-        status: user.status,
-      };
-    })
-    .filter((value): value is { id: string; phone: string; roles: string[]; status: "active" | "invited" | "blocked" } => Boolean(value));
+  if (userIds.length === 0) {
+    return NextResponse.json({ success: true, scanners: [] });
+  }
+
+  const { data: users, error: usersError } = await supabase
+    .from("users")
+    .select("id, phone, roles, status")
+    .in("id", userIds)
+    .returns<UserRow[]>();
+
+  if (usersError) {
+    return NextResponse.json(
+      { success: false, error: "Lecture des profils scanneurs impossible." },
+      { status: 500 },
+    );
+  }
+
+  const scanners = (users ?? []).map((user) => ({
+    id: user.id,
+    phone: user.phone,
+    roles: user.roles ?? [],
+    status: user.status,
+  }));
 
   return NextResponse.json({ success: true, scanners });
 }
