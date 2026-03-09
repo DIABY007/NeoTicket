@@ -3,6 +3,9 @@ import Link from "next/link";
 import { CreateEventForm } from "@/components/organizer/create-event-form";
 import { resolvePlatformDiscountPercent } from "@/lib/pricing";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function IconHome() {
   return (
     <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">

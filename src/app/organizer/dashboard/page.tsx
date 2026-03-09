@@ -3,6 +3,9 @@ import Image from "next/image";
 import { OrganizerDashboardContent } from "@/components/organizer/organizer-dashboard-content";
 import { resolvePlatformDiscountPercent } from "@/lib/pricing";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function OrganizerDashboardPage() {
   const platformDiscountPercent = await resolvePlatformDiscountPercent();
 
