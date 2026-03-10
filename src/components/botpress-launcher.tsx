@@ -48,6 +48,25 @@ export function BotpressLauncher() {
           el.style.setProperty("pointer-events", "none", "important");
         });
       });
+
+      // Some Botpress builds render launcher in a dedicated iframe.
+      // Hide only launcher-sized iframes so the full chat window remains available.
+      document
+        .querySelectorAll<HTMLIFrameElement>('iframe[src*="botpress"], iframe[src*="bpcontent.cloud"], iframe[src*="cdn.botpress.cloud"]')
+        .forEach((iframe) => {
+          const rect = iframe.getBoundingClientRect();
+          const style = window.getComputedStyle(iframe);
+          const isLikelyLauncherSize = rect.width > 28 && rect.width < 140 && rect.height > 28 && rect.height < 140;
+          const isFixedLike = style.position === "fixed" || style.position === "absolute";
+          const isBottomRight = rect.right >= window.innerWidth - 180 && rect.bottom >= window.innerHeight - 220;
+
+          if (isLikelyLauncherSize && isFixedLike && isBottomRight) {
+            iframe.style.setProperty("display", "none", "important");
+            iframe.style.setProperty("visibility", "hidden", "important");
+            iframe.style.setProperty("opacity", "0", "important");
+            iframe.style.setProperty("pointer-events", "none", "important");
+          }
+        });
     };
 
     const check = () => {
