@@ -901,7 +901,10 @@ export function MainHomeShell({
         <div className="mx-auto flex w-full max-w-5xl items-center justify-around px-2 py-2">
           <button
             type="button"
-            onClick={() => setActiveTab("feed")}
+            onClick={() => {
+              setActiveTab("feed");
+              router.refresh();
+            }}
             className={`flex min-w-[72px] flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium transition ${
               activeTab === "feed" ? "neo-gradient text-white" : "text-black/50 hover:text-neo-teal"
             }`}
