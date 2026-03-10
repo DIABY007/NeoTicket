@@ -5,6 +5,8 @@
   --foreground: #111111;
   --neo-teal: #0d9488;
   --neo-green: #84cc16;
+  --neo-navbar-height: 64px;
+  --neo-chat-gap: 20px;
   --neo-gradient: linear-gradient(135deg, #0d9488 0%, #84cc16 100%);
   --neo-gradient-subtle: linear-gradient(135deg, rgba(13,148,136,0.08) 0%, rgba(132,204,22,0.08) 100%);
 }
@@ -181,6 +183,16 @@ button[class*="bpFab"] {
   pointer-events: none !important;
   height: 0 !important;
   width: 0 !important;
+  bottom: calc(var(--neo-navbar-height) + var(--neo-chat-gap) + env(safe-area-inset-bottom)) !important;
+  right: 12px !important;
+}
+
+/* Fallback for Botpress builds that keep launcher in a bottom-right iframe. */
+iframe[src*="botpress"][style*="position: fixed"],
+iframe[src*="bpcontent.cloud"][style*="position: fixed"],
+iframe[src*="cdn.botpress.cloud"][style*="position: fixed"] {
+  bottom: calc(var(--neo-navbar-height) + var(--neo-chat-gap) + env(safe-area-inset-bottom)) !important;
+  right: 12px !important;
 }
 
 /* Keep the opened chat window above the bottom navbar. */
@@ -189,7 +201,26 @@ button[class*="bpFab"] {
 #bp-web-widget,
 #bp-webchat,
 [id*="bp-web-widget"] {
-  bottom: 104px !important;
+  bottom: calc(var(--neo-navbar-height) + var(--neo-chat-gap) + env(safe-area-inset-bottom)) !important;
   right: 12px !important;
   z-index: 2147483000 !important;
+}
+
+/* FORCER LE REPOSITIONNEMENT DU WIDGET BOTPRESS NATIF */
+#bp-webchat,
+.bp-widget-widget,
+.bpContainer,
+[id^="bp-webchat"] {
+  bottom: calc(96px + env(safe-area-inset-bottom)) !important;
+  z-index: 60 !important;
+}
+
+/* Sur Desktop, on le remet en bas a droite normalement */
+@media (min-width: 768px) {
+  #bp-webchat,
+  .bp-widget-widget,
+  .bpContainer,
+  [id^="bp-webchat"] {
+    bottom: 24px !important;
+  }
 }

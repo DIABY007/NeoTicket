@@ -1,4 +1,46 @@
-"use client";
+Étape 1 : Nettoyer le composant React
+Ouvrez src/components/botpress-launcher.tsx et remplacez la classe de positionnement ultra-complexe par des valeurs Tailwind strictes. La navbar fait environ 60-70px, donc on va bloquer le bouton à 96px du bas (l'équivalent de bottom-24).
+
+Modifiez la ligne className du bouton (autour de la ligne 157) par ceci :
+
+TypeScript
+
+className="neo-launcher fixed right-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition-transform hover:scale-105 bottom-[calc(96px+env(safe-area-inset-bottom))] md:bottom-6"
+(L'ajout de env(safe-area-inset-bottom) garantit que le bouton ne sera pas mangé par la barre de navigation native des iPhones en bas de l'écran).
+
+Étape 2 : Dompter le widget injecté par Botpress
+Puisque le bouton sur votre image est celui de Botpress par défaut, il faut écraser de force son CSS natif injecté via l'iframe, sinon il continuera de s'afficher au-dessus de votre navbar.
+
+Ouvrez src/app/globals.css et ajoutez ceci tout à la fin du fichier :
+
+CSS
+
+/* FORCER LE REPOSITIONNEMENT DU WIDGET BOTPRESS NATIF */
+#bp-webchat, 
+.bp-widget-widget, 
+.bpContainer, 
+[id^="bp-webchat"] {
+  bottom: calc(96px + env(safe-area-inset-bottom)) !important;
+  z-index: 60 !important;
+}
+
+/* Sur Desktop, on le remet en bas à droite normalement */
+@media (min-width: 768px) {
+  #bp-webchat, 
+  .bp-widget-widget, 
+  .bpContainer, 
+  [id^="bp-webchat"] {
+    bottom: 24px !important;
+  }
+}
+Étape 3 : Nettoyer le cache mobile
+Les iframes de Botpress sont très agressives avec le cache. Une fois ce code déployé ou enregistré en local :
+
+Fermez complètement l'onglet sur votre téléphone (ou tuez la PWA si elle est installée sur l'écran d'accueil).
+
+Videz le cache de votre navigateur mobile.
+
+Rechargez la page."use client";
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -154,7 +196,7 @@ export function BotpressLauncher() {
       onClick={() => {
         openChat();
       }}
-      className="neo-launcher fixed bottom-[104px] right-3 z-[2147483001] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg ring-2 ring-white/80 transition hover:bg-emerald-600 active:scale-95"
+      className="neo-launcher fixed right-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition-transform hover:scale-105 bottom-[calc(96px+env(safe-area-inset-bottom))] md:bottom-6"
       aria-label="Ouvrir le chat"
       title={isReady ? "Discuter avec NeoTicket" : "Initialisation du chat..."}
       aria-disabled={!isReady}
