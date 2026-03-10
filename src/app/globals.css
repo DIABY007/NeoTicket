@@ -142,3 +142,19 @@ body {
 @utility animate-toast-in {
   animation: toast-in 0.25s ease-out;
 }
+
+/* Keep Botpress launcher above fixed bottom navbar and always visible. */
+:root {
+  --chat-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 86px);
+}
+
+#bp-web-widget-container,
+#bp-web-widget,
+[id^="bp-web-widget"],
+[class*="bpFab"],
+[class*="bp-fab"] {
+  bottom: var(--chat-bottom-offset) !important;
+  z-index: 55 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}

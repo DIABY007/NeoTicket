@@ -161,7 +161,6 @@ export async function PATCH(
     officialPrice?: number;
     organizerPrice?: number;
     isFreeEvent?: boolean;
-    slug?: string;
     status?: "draft" | "published" | "ended" | "cancelled";
   };
 
@@ -181,7 +180,6 @@ export async function PATCH(
     body.officialPrice,
     body.organizerPrice,
     body.isFreeEvent,
-    body.slug,
   ].some((value) => value !== undefined);
 
   if (!hasNonStatusPayload && status !== undefined) {
@@ -231,7 +229,32 @@ export async function PATCH(
   const endDateRaw = String(body.endDate ?? "").trim();
   const officialPrice = Number(body.officialPrice ?? NaN);
   const organizerPrice = Number(body.organizerPrice ?? NaN);
-  const requestedSlug = String(body.slug ?? "").trim();
+  let existingEventQuery = supabase
+    .from("events")
+    .select("id, slug")
+    .eq("id", id)
+    .limit(1);
+
+  if (!isAdmin) {
+    existingEventQuery = existingEventQuery.eq("organizer_id", auth.session.userId);
+  }
+
+  const { data: existingEvent, error: existingEventError } =
+    await existingEventQuery.maybeSingle<{ id: string; slug: string }>();
+
+  if (existingEventError) {
+    return NextResponse.json(
+      { success: false, error: "Lecture evenement impossible." },
+      { status: 500 },
+    );
+  }
+
+  if (!existingEvent) {
+    return NextResponse.json(
+      { success: false, error: "Evenement introuvable." },
+      { status: 404 },
+    );
+  }
 
   if (!title) {
     return NextResponse.json(
@@ -317,7 +340,7 @@ export async function PATCH(
 
   const slug = await resolveUniqueSlug({
     supabase,
-    requestedSlug,
+    requestedSlug: existingEvent.slug,
     title,
     city,
     date: startDate,
