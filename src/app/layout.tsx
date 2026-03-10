@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { BotpressLauncher } from "@/components/botpress-launcher";
 import { GlobalPlatformNav } from "@/components/app/global-platform-nav";
-import { BotpressPositioner } from "@/components/botpress-positioner";
 import { Poppins, Geist_Mono } from "next/font/google";
 import { PwaRegister } from "@/components/pwa-register";
 import "./globals.css";
@@ -80,7 +80,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <GlobalPlatformNav />
-          <BotpressPositioner />
+          <BotpressLauncher />
           <PwaRegister />
         </AuthProvider>
       </body>

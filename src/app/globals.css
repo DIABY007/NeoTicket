@@ -143,24 +143,19 @@ body {
   animation: toast-in 0.25s ease-out;
 }
 
-/* Botpress: CSS fallback — the BotpressPositioner React component handles runtime positioning */
+/* Botpress: use official class names from docs for stable positioning. */
 
-#bp-web-widget,
-#bp-web-widget-container,
-#bp-webchat,
-#botpress-webchat,
-bp-webchat,
-[id*="botpress"],
-[id*="bp-web-widget"],
-[iframe][src*="botpress"],
-[iframe][src*="bpcontent.cloud"],
-[iframe][src*="cdn.botpress.cloud"],
-[class*="bpWidget"],
-[class*="bpFab"],
-[class*="FabButton"],
-[class*="FabWrapper"] {
-  bottom: 112px !important;
+/* Hide Botpress native floating button: we use our own launcher button. */
+.bpFabWrapper {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Keep the opened chat window above the bottom navbar. */
+.bpWebchat {
+  bottom: 104px !important;
+  right: 12px !important;
   z-index: 2147483000 !important;
-  visibility: visible !important;
-  opacity: 1 !important;
 }
