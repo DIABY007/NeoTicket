@@ -143,8 +143,7 @@ body {
   animation: toast-in 0.25s ease-out;
 }
 
-/* Keep Botpress launcher above fixed bottom navbar — CSS fallback for known selectors.
-   The JS script in layout.tsx handles runtime detection for all other cases. */
+/* Botpress: CSS fallback — the BotpressPositioner React component handles runtime positioning */
 
 #bp-web-widget,
 #bp-web-widget-container,
@@ -154,12 +153,9 @@ bp-webchat,
 [id*="bp-web-widget"],
 [class*="bpWidget"],
 [class*="bpFab"],
-[class*="bp-fab"],
 [class*="FabButton"],
-[class*="fabButton"],
-[class*="FabWrapper"],
-[class*="fabWrapper"] {
-  bottom: 72px !important;
+[class*="FabWrapper"] {
+  bottom: 80px !important;
   z-index: 9999 !important;
   visibility: visible !important;
   opacity: 1 !important;
