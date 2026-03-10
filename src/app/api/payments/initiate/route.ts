@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getSessionFromRequestCookies } from "@/lib/auth/server-session";
+import { finalizeSuccessfulPayment } from "@/lib/payments/payment-workflow";
 import { normalizePhone, isE164Phone } from "@/lib/auth/phone";
 import { computeFinalPrice, resolvePlatformDiscountPercent } from "@/lib/pricing";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
@@ -18,11 +19,15 @@ export async function POST(request: Request) {
       eventId?: string;
       buyerPhone?: string;
       buyerName?: string;
+      promoCodeId?: string | null;
+      refCode?: string | null;
     };
 
     const eventId = String(body.eventId ?? "").trim();
     const buyerPhone = normalizePhone(String(body.buyerPhone ?? ""));
     const buyerName = String(body.buyerName ?? "").trim() || "Client";
+    const promoCodeId = body.promoCodeId ? String(body.promoCodeId).trim() : null;
+    const refCode = body.refCode ? String(body.refCode).trim().toLowerCase() : null;
 
     if (!eventId) {
       return NextResponse.json({ success: false, error: "eventId requis." }, { status: 400 });
@@ -75,7 +80,52 @@ export async function POST(request: Request) {
     }
 
     const organizerPrice = Number(event.organizer_price ?? event.price);
-    const totalAmount = computeFinalPrice(organizerPrice, platformDiscountPercent);
+    let totalAmount = computeFinalPrice(organizerPrice, platformDiscountPercent);
+
+    // Validate and apply promo code discount BEFORE platform fees
+    let validatedPromoId: string | null = null;
+    if (promoCodeId) {
+      const { data: promo } = await supabase
+        .from("promo_codes")
+        .select("id, discount_percent, max_uses, current_uses, expires_at, is_active, event_id")
+        .eq("id", promoCodeId)
+        .maybeSingle<{
+          id: string;
+          discount_percent: number;
+          max_uses: number;
+          current_uses: number;
+          expires_at: string | null;
+          is_active: boolean;
+          event_id: string;
+        }>();
+
+      if (
+        promo &&
+        promo.event_id === eventId &&
+        promo.is_active &&
+        promo.current_uses < promo.max_uses &&
+        (!promo.expires_at || new Date(promo.expires_at).getTime() > Date.now())
+      ) {
+        totalAmount = Math.max(0, Math.round(totalAmount * (1 - promo.discount_percent / 100)));
+        validatedPromoId = promo.id;
+      }
+    }
+
+    // Resolve affiliate from ref_code
+    let validatedAffiliateId: string | null = null;
+    if (refCode) {
+      const { data: affiliate } = await supabase
+        .from("affiliates")
+        .select("id")
+        .eq("event_id", eventId)
+        .ilike("ref_code", refCode)
+        .maybeSingle<{ id: string }>();
+
+      if (affiliate) {
+        validatedAffiliateId = affiliate.id;
+      }
+    }
+
     const { commission, organizerAmount } = computeCommission(totalAmount);
 
     const { data: ticket, error: ticketError } = await supabase
@@ -85,6 +135,8 @@ export async function POST(request: Request) {
         buyer_id: session?.userId ?? null,
         buyer_phone: buyerPhone,
         status: "pending",
+        promo_code_id: validatedPromoId,
+        affiliate_id: validatedAffiliateId,
       })
       .select("id")
       .single<{ id: string }>();
@@ -109,7 +161,7 @@ export async function POST(request: Request) {
         currency: "XOF",
         payment_initiated_at: new Date().toISOString(),
         provider_payload: {
-          mode: "ussd_manual",
+          mode: totalAmount <= 0 ? "free_ticket" : "ussd_manual",
           buyerName,
         },
       })
@@ -121,6 +173,33 @@ export async function POST(request: Request) {
         { success: false, error: "Creation transaction impossible." },
         { status: 500 },
       );
+    }
+
+    if (totalAmount <= 0) {
+      const forwardedProto = request.headers.get("x-forwarded-proto");
+      const forwardedHost = request.headers.get("x-forwarded-host") || request.headers.get("host");
+      const requestOrigin = new URL(request.url).origin;
+      const publicBaseUrl =
+        forwardedProto && forwardedHost
+          ? `${forwardedProto}://${forwardedHost}`
+          : requestOrigin;
+
+      const finalized = await finalizeSuccessfulPayment({
+        transactionId: tx.id,
+        providerReference: "FREE-TICKET",
+        providerPayload: { source: "free_ticket_auto", buyerName },
+        source: "admin",
+        publicBaseUrl,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Ticket gratuit confirme instantanement.",
+        flow: "free_ticket",
+        transactionId: tx.id,
+        ticketId: finalized.ticketId,
+        qrLink: finalized.qrLink,
+      });
     }
 
     const supportPhone = process.env.SUPPORT_PHONE || "+22656636039";
@@ -145,6 +224,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: "Paiement en cours de traitement.",
+      flow: "ussd_manual",
       transactionId: tx.id,
       finalAmount: totalAmount,
       supportPhone,

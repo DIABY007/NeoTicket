@@ -29,6 +29,15 @@ type PayoutRow = {
   status: "pending" | "paid" | "rejected";
 };
 
+function getEventEndAt(event: EventRow) {
+  const startAt = new Date(event.date);
+  if (event.end_date) {
+    return new Date(event.end_date);
+  }
+
+  return new Date(startAt.getTime() + 24 * 60 * 60 * 1000);
+}
+
 export async function POST(request: Request) {
   const secret = process.env.OTP_SIGNING_SECRET;
   if (!secret) {
@@ -94,6 +103,13 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { success: false, error: "Acces non autorise a cet evenement." },
       { status: 403 },
+    );
+  }
+
+  if (Date.now() < getEventEndAt(event).getTime()) {
+    return NextResponse.json(
+      { success: false, error: "Le versement est disponible uniquement a la fin de l'evenement." },
+      { status: 400 },
     );
   }
 

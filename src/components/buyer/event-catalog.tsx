@@ -25,6 +25,9 @@ type BuyerEvent = {
 };
 
 function formatMoney(amount: number) {
+  if (Math.round(amount) <= 0) {
+    return "Gratuit";
+  }
   return new Intl.NumberFormat("fr-FR").format(amount) + " F CFA";
 }
 
@@ -473,6 +476,10 @@ export function EventCatalog({ events }: { events: BuyerEvent[] }) {
                   ) : (
                     <p className="text-lg font-bold text-black">{formatMoney(event.final_price)}</p>
                   )}
+
+                  <span className="rounded-lg border border-black/10 px-2.5 py-1 text-[11px] font-semibold text-black/70">
+                    {Math.round(event.final_price) <= 0 ? "Recuperer ticket gratuit" : "Acheter ticket"}
+                  </span>
                 </div>
               </div>
             </Link>

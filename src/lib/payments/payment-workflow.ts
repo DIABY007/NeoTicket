@@ -103,6 +103,43 @@ export async function finalizeSuccessfulPayment(input: FinalizeSuccessInput) {
     throw new Error("Mise a jour ticket paid impossible.");
   }
 
+  // Increment promo code usage and affiliate sales count
+  const { data: ticketTracking } = await supabase
+    .from("tickets")
+    .select("promo_code_id, affiliate_id")
+    .eq("id", ticket.id)
+    .maybeSingle<{ promo_code_id: string | null; affiliate_id: string | null }>();
+
+  if (ticketTracking?.promo_code_id) {
+    const { data: currentPromo } = await supabase
+      .from("promo_codes")
+      .select("current_uses")
+      .eq("id", ticketTracking.promo_code_id)
+      .maybeSingle<{ current_uses: number }>();
+
+    if (currentPromo) {
+      await supabase
+        .from("promo_codes")
+        .update({ current_uses: currentPromo.current_uses + 1 })
+        .eq("id", ticketTracking.promo_code_id);
+    }
+  }
+
+  if (ticketTracking?.affiliate_id) {
+    const { data: currentAffiliate } = await supabase
+      .from("affiliates")
+      .select("sales_count")
+      .eq("id", ticketTracking.affiliate_id)
+      .maybeSingle<{ sales_count: number }>();
+
+    if (currentAffiliate) {
+      await supabase
+        .from("affiliates")
+        .update({ sales_count: currentAffiliate.sales_count + 1 })
+        .eq("id", ticketTracking.affiliate_id);
+    }
+  }
+
   const appUrl = resolvePublicBaseUrl(input.publicBaseUrl);
   const qrLink = appUrl ? `${appUrl}/api/qr/${ticket.id}` : undefined;
 

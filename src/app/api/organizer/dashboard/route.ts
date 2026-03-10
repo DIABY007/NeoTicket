@@ -31,6 +31,15 @@ type PayoutRow = {
   status: "pending" | "paid" | "rejected";
 };
 
+function getEventEndAt(event: EventRow) {
+  const startAt = new Date(event.date);
+  if (event.end_date) {
+    return new Date(event.end_date);
+  }
+
+  return new Date(startAt.getTime() + 24 * 60 * 60 * 1000);
+}
+
 function computeLifecycleStatus(event: EventRow): "brouillon" | "annule" | "en_cours" | "termine" {
   if (event.status === "draft") {
     return "brouillon";
@@ -40,10 +49,7 @@ function computeLifecycleStatus(event: EventRow): "brouillon" | "annule" | "en_c
     return "annule";
   }
 
-  const startAt = new Date(event.date);
-  const endAt = event.end_date
-    ? new Date(event.end_date)
-    : new Date(startAt.getTime() + 24 * 60 * 60 * 1000);
+  const endAt = getEventEndAt(event);
 
   return Date.now() >= endAt.getTime() || event.status === "ended" ? "termine" : "en_cours";
 }
@@ -187,27 +193,28 @@ export async function GET() {
       }
     }
 
-    const results = safeEvents.map((event) => ({
-      organizerFunds: fundsByEvent.get(event.id) ?? 0,
-      payoutPendingAmount: payoutPendingByEvent.get(event.id) ?? 0,
-      payoutPaidAmount: payoutPaidByEvent.get(event.id) ?? 0,
-      payoutRequestableAmount: Math.max(
+    const results = safeEvents.map((event) => {
+      const payoutRequestableAmount = Math.max(
         0,
         (fundsByEvent.get(event.id) ?? 0) - (payoutPendingByEvent.get(event.id) ?? 0) - (payoutPaidByEvent.get(event.id) ?? 0),
-      ),
-      id: event.id,
-      title: event.title,
-      date: event.date,
-      endDate: event.end_date,
-      sourceStatus: event.status,
-      lifecycleStatus: computeLifecycleStatus(event),
-      ticketsSold: soldCountByEvent.get(event.id) ?? 0,
-      canRequestPayout:
-        Math.max(
-          0,
-          (fundsByEvent.get(event.id) ?? 0) - (payoutPendingByEvent.get(event.id) ?? 0) - (payoutPaidByEvent.get(event.id) ?? 0),
-        ) > 0,
-    }));
+      );
+      const isPayoutWindowOpen = Date.now() >= getEventEndAt(event).getTime() || event.status === "ended";
+
+      return {
+        organizerFunds: fundsByEvent.get(event.id) ?? 0,
+        payoutPendingAmount: payoutPendingByEvent.get(event.id) ?? 0,
+        payoutPaidAmount: payoutPaidByEvent.get(event.id) ?? 0,
+        payoutRequestableAmount,
+        id: event.id,
+        title: event.title,
+        date: event.date,
+        endDate: event.end_date,
+        sourceStatus: event.status,
+        lifecycleStatus: computeLifecycleStatus(event),
+        ticketsSold: soldCountByEvent.get(event.id) ?? 0,
+        canRequestPayout: isPayoutWindowOpen && payoutRequestableAmount > 0,
+      };
+    });
 
     return NextResponse.json({ success: true, events: results });
   } catch {

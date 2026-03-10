@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { BuyTicketButton } from "@/components/buyer/buy-ticket-button";
 import { EventPageActions } from "@/components/buyer/event-page-actions";
@@ -34,14 +35,16 @@ type EventDetail = {
 
 type Props = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-async function getEventFromSlug(slug: string) {
+async function getPublicEventFromSlug(slug: string) {
   const supabase = getSupabaseServerClient();
   const { data } = await supabase
     .from("events")
     .select("id, slug, title, description, date, end_date, price, official_price, organizer_price, city, venue, image_url, status")
     .eq("slug", slug)
+    .in("status", ["published", "ended", "cancelled"])
     .maybeSingle<EventDetail>();
 
   return data;
@@ -55,12 +58,15 @@ function formatEventDate(value: string) {
 }
 
 function formatMoney(amount: number) {
+  if (Math.round(amount) <= 0) {
+    return "Gratuit";
+  }
   return new Intl.NumberFormat("fr-FR").format(amount) + " F CFA";
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const event = await getEventFromSlug(slug);
+  const event = await getPublicEventFromSlug(slug);
 
   if (!event) {
     return {
@@ -78,6 +84,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = `${event.title} — Billets & Tickets à ${cityLabel}`;
   const description = `Achetez vos billets pour ${event.title} le ${dateLabel} à ${cityLabel}. Paiement sécurisé via Orange Money. Recevez votre QR Code par WhatsApp.`;
   const canonicalPath = `/e/${slug}`;
+  const ogImageUrl = `${siteUrl}/e/${slug}/opengraph-image`;
 
   return {
     title,
@@ -90,45 +97,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url: canonicalPath,
       type: "website",
-      images: event.image_url
-        ? [
-            {
-              url: event.image_url,
-              width: 1200,
-              height: 630,
-              alt: `Affiche de l'evenement ${event.title}`,
-            },
-          ]
-        : undefined,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `Affiche de l'evenement ${event.title}`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: event.image_url ? [event.image_url] : undefined,
+      images: [ogImageUrl],
     },
   };
 }
 
-export default async function EventDetailsBySlugPage({ params }: Props) {
+export default async function EventDetailsBySlugPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const data = await getEventFromSlug(slug);
+  const resolvedSearchParams = await searchParams;
+  const refCode = typeof resolvedSearchParams.ref === "string" ? resolvedSearchParams.ref : undefined;
+  const data = await getPublicEventFromSlug(slug);
   const platformDiscountPercent = await resolvePlatformDiscountPercent();
 
   if (!data) {
-    return (
-      <main className="min-h-screen px-4 py-6">
-        <section className="mx-auto max-w-3xl rounded-2xl border border-black/6 bg-white p-6">
-          <h1 className="text-2xl font-bold">Événement introuvable</h1>
-          <p className="mt-2 text-sm text-black/70">
-            L&apos;événement demandé n&apos;existe pas ou n&apos;est plus disponible.
-          </p>
-          <Link href="/events" className="neo-btn mt-4 inline-block rounded-xl px-4 py-2 text-sm">
-            Retour au catalogue
-          </Link>
-        </section>
-      </main>
-    );
+    notFound();
   }
 
   const officialPrice = Number(data.official_price ?? data.price);
@@ -287,9 +282,11 @@ export default async function EventDetailsBySlugPage({ params }: Props) {
 
           <BuyTicketButton
             eventId={data.id}
+            officialPrice={officialPrice}
             finalPrice={finalPrice}
             eventDate={data.date}
             eventStatus={data.status}
+            refCode={refCode}
           />
         </div>
       </section>

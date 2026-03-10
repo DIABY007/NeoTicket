@@ -830,9 +830,15 @@ export function MainHomeShell({
                                 ) : (
                                   <span
                                     className="text-xs text-black/40"
-                                    title="L'evenement doit etre termine et avoir des fonds disponibles"
+                                    title={
+                                      event.lifecycleStatus !== "termine"
+                                        ? "Le versement est disponible uniquement a la fin de l'evenement"
+                                        : "Aucun montant disponible ou versement deja en cours"
+                                    }
                                   >
-                                    Versement en cours de traitement
+                                    {event.lifecycleStatus !== "termine"
+                                      ? "Disponible a la fin de l'evenement"
+                                      : "Versement en cours de traitement"}
                                   </span>
                                 )}
                               </div>

@@ -38,6 +38,7 @@ export function CreateEventForm({
 
   const [officialPrice, setOfficialPrice] = useState("");
   const [organizerPrice, setOrganizerPrice] = useState("");
+  const [isFreeEvent, setIsFreeEvent] = useState(false);
   const [omPhone, setOmPhone] = useState("");
 
   /* ---- ui state ---- */
@@ -48,15 +49,15 @@ export function CreateEventForm({
   /* ---- computed ---- */
   const effectiveCity =
     selectedCity === "__custom__" ? customCity.trim() : selectedCity;
-  const offNum = parseInt(officialPrice, 10) || 0;
-  const orgNum = parseInt(organizerPrice, 10) || 0;
+  const offNum = isFreeEvent ? 0 : parseInt(officialPrice, 10) || 0;
+  const orgNum = isFreeEvent ? 0 : parseInt(organizerPrice, 10) || 0;
   const clientPays =
     orgNum > 0
       ? Math.round(orgNum * (1 - platformDiscountPercent / 100))
       : 0;
   const organizerGain =
     clientPays > 0 ? Math.round(clientPays * (1 - COMMISSION_RATE)) : 0;
-  const showCalculator = offNum > 0 && orgNum > 0 && orgNum <= offNum;
+  const showCalculator = !isFreeEvent && offNum > 0 && orgNum > 0 && orgNum <= offNum;
   const priceError = orgNum > offNum && offNum > 0;
 
   /* ---- handlers ---- */
@@ -94,8 +95,8 @@ export function CreateEventForm({
       if (venue.trim()) fd.set("venue", venue.trim());
       fd.set("startDate", startDate);
       if (endDate) fd.set("endDate", endDate);
-      fd.set("officialPrice", officialPrice);
-      fd.set("organizerPrice", organizerPrice);
+      fd.set("officialPrice", isFreeEvent ? "0" : officialPrice);
+      fd.set("organizerPrice", isFreeEvent ? "0" : organizerPrice);
       if (omPhone) {
         fd.set("omReceiverPhone", `+226${omPhone.replace(/\D/g, "")}`);
       }
@@ -128,6 +129,7 @@ export function CreateEventForm({
       setEndDate("");
       setOfficialPrice("");
       setOrganizerPrice("");
+      setIsFreeEvent(false);
       setOmPhone("");
       onCreated?.();
     } catch {
@@ -354,6 +356,23 @@ export function CreateEventForm({
         <StepHeader n={3} label="Combien ?" />
 
         <div className="space-y-4">
+          <label className="flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+            <input
+              type="checkbox"
+              checked={isFreeEvent}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setIsFreeEvent(checked);
+                if (checked) {
+                  setOfficialPrice("");
+                  setOrganizerPrice("");
+                }
+              }}
+            />
+            <span className="font-medium">Evenement gratuit</span>
+            <span className="text-xs text-black/50">(bloque la saisie des prix)</span>
+          </label>
+
           {/* Prix */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="block text-sm">
@@ -362,9 +381,10 @@ export function CreateEventForm({
                 type="number"
                 value={officialPrice}
                 onChange={(e) => setOfficialPrice(e.target.value)}
-                min={1}
+                min={0}
                 step={1}
-                required
+                required={!isFreeEvent}
+                disabled={isFreeEvent}
                 inputMode="numeric"
                 placeholder="3000"
                 className="mt-1 w-full neo-input rounded-xl px-4 py-3 text-base"
@@ -378,15 +398,20 @@ export function CreateEventForm({
                 type="number"
                 value={organizerPrice}
                 onChange={(e) => setOrganizerPrice(e.target.value)}
-                min={1}
+                min={0}
                 step={1}
-                required
+                required={!isFreeEvent}
+                disabled={isFreeEvent}
                 inputMode="numeric"
                 placeholder="2000"
                 className="mt-1 w-full neo-input rounded-xl px-4 py-3 text-base"
               />
             </label>
           </div>
+
+          {isFreeEvent ? (
+            <p className="text-xs text-neo-teal">Ticket gratuit: aucun paiement ne sera demande au client.</p>
+          ) : null}
 
           {/* Calculateur temps reel */}
           {showCalculator && (

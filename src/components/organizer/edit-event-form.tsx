@@ -43,6 +43,7 @@ export function EditEventForm({ eventId }: { eventId: string }) {
   const [endDate, setEndDate] = useState("");
   const [officialPrice, setOfficialPrice] = useState("1000");
   const [organizerPrice, setOrganizerPrice] = useState("1000");
+  const [isFreeEvent, setIsFreeEvent] = useState(false);
   const [status, setStatus] = useState<EventStatus>("published");
 
   useEffect(() => {
@@ -81,6 +82,7 @@ export function EditEventForm({ eventId }: { eventId: string }) {
         setEndDate(toLocalDateTimeInput(nextEvent.end_date));
         setOfficialPrice(String(nextEvent.official_price));
         setOrganizerPrice(String(nextEvent.organizer_price));
+        setIsFreeEvent(Number(nextEvent.official_price) === 0 && Number(nextEvent.organizer_price) === 0);
         setStatus(nextEvent.status);
       } catch {
         if (isActive) {
@@ -129,6 +131,7 @@ export function EditEventForm({ eventId }: { eventId: string }) {
           endDate: endDate || null,
           officialPrice: Number.parseInt(officialPrice, 10),
           organizerPrice: Number.parseInt(organizerPrice, 10),
+          isFreeEvent,
           status,
         }),
       });
@@ -239,15 +242,36 @@ export function EditEventForm({ eventId }: { eventId: string }) {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
+          <label className="sm:col-span-2 flex items-center gap-2 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm">
+            <input
+              type="checkbox"
+              checked={isFreeEvent}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setIsFreeEvent(checked);
+                if (checked) {
+                  setOfficialPrice("0");
+                  setOrganizerPrice("0");
+                } else {
+                  setOfficialPrice("1000");
+                  setOrganizerPrice("1000");
+                }
+              }}
+            />
+            <span className="font-medium">Evenement gratuit</span>
+            <span className="text-xs text-black/50">(impossible de garder un prix en mode gratuit)</span>
+          </label>
+
           <label className="grid gap-1 text-sm">
             <span className="font-medium">Prix officiel (FCFA)</span>
             <input
               type="number"
-              min={1}
+              min={0}
               step={1}
               value={officialPrice}
               onChange={(event) => setOfficialPrice(event.target.value)}
-              required
+              required={!isFreeEvent}
+              disabled={isFreeEvent}
               className="neo-input rounded-xl px-3 py-3"
             />
           </label>
@@ -256,11 +280,12 @@ export function EditEventForm({ eventId }: { eventId: string }) {
             <span className="font-medium">Prix promo organisateur (FCFA)</span>
             <input
               type="number"
-              min={1}
+              min={0}
               step={1}
               value={organizerPrice}
               onChange={(event) => setOrganizerPrice(event.target.value)}
-              required
+              required={!isFreeEvent}
+              disabled={isFreeEvent}
               className="neo-input rounded-xl px-3 py-3"
             />
           </label>

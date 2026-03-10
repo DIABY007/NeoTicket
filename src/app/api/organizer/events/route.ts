@@ -167,16 +167,27 @@ export async function POST(request: Request) {
     const officialPrice = Number.parseInt(officialPriceRaw, 10);
     const organizerPrice = Number.parseInt(organizerPriceRaw, 10);
 
-    if (!Number.isFinite(officialPrice) || officialPrice <= 0) {
+    if (!Number.isFinite(officialPrice) || officialPrice < 0) {
       return NextResponse.json(
-        { success: false, error: "Le prix officiel doit etre un entier positif." },
+        { success: false, error: "Le prix officiel doit etre un entier positif ou zero." },
         { status: 400 },
       );
     }
 
-    if (!Number.isFinite(organizerPrice) || organizerPrice <= 0) {
+    if (!Number.isFinite(organizerPrice) || organizerPrice < 0) {
       return NextResponse.json(
-        { success: false, error: "Le prix promo organisateur doit etre un entier positif." },
+        { success: false, error: "Le prix promo organisateur doit etre un entier positif ou zero." },
+        { status: 400 },
+      );
+    }
+
+    const isFreeEvent = officialPrice === 0 || organizerPrice === 0;
+    if (isFreeEvent && !(officialPrice === 0 && organizerPrice === 0)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Mode gratuit invalide: mettez les deux prix a 0, ou renseignez deux prix positifs.",
+        },
         { status: 400 },
       );
     }

@@ -21,6 +21,7 @@ const UUID_REGEX =
 
 type Props = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 type BuyerEvent = {
@@ -117,8 +118,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function EventsDynamicSegmentPage({ params }: Props) {
+export default async function EventsDynamicSegmentPage({ params, searchParams }: Props) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+  const refParam = typeof resolvedSearchParams.ref === "string" ? resolvedSearchParams.ref : undefined;
 
   if (UUID_REGEX.test(id)) {
     const supabase = getSupabaseServerClient();
@@ -129,7 +132,9 @@ export default async function EventsDynamicSegmentPage({ params }: Props) {
       .maybeSingle<{ id: string; slug: string; title: string; city: string | null; date: string }>();
 
     if (data) {
-      redirect(`/e/${data.slug || buildEventSlug(data)}`);
+      const slug = data.slug || buildEventSlug(data);
+      const refSuffix = refParam ? `?ref=${encodeURIComponent(refParam)}` : "";
+      redirect(`/e/${slug}${refSuffix}`);
     }
 
     redirect("/events");
