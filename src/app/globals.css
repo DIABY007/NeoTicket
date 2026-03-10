@@ -150,13 +150,17 @@ body {
 #bp-webchat,
 #botpress-webchat,
 bp-webchat,
+[id*="botpress"],
 [id*="bp-web-widget"],
+[iframe][src*="botpress"],
+[iframe][src*="bpcontent.cloud"],
+[iframe][src*="cdn.botpress.cloud"],
 [class*="bpWidget"],
 [class*="bpFab"],
 [class*="FabButton"],
 [class*="FabWrapper"] {
-  bottom: 80px !important;
-  z-index: 9999 !important;
+  bottom: 112px !important;
+  z-index: 2147483000 !important;
   visibility: visible !important;
   opacity: 1 !important;
 }
