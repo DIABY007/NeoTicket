@@ -145,22 +145,28 @@ body {
 
 /* Keep Botpress launcher above fixed bottom navbar and always visible. */
 :root {
-  --chat-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 132px);
+  --chat-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 72px);
 }
 
-#bp-web-widget-container,
-#bp-web-widget,
-[id^="bp-web-widget"],
-[id*="bp-web-widget"],
-[class*="bpWebchat"],
+/* Only push the FAB button up above the navbar — not the full chat panel */
 [class*="bpFab"],
 [class*="bp-fab"],
-#bp-web-widget-container iframe,
-#bp-web-widget iframe,
-[id^="bp-web-widget"] iframe,
-[id*="bp-web-widget"] iframe {
+[id*="bp-web-widget"] > [class*="Fab"],
+[id*="bp-web-widget"] > [class*="fab"],
+[id*="bp-web-widget"] > button:last-child,
+#bp-web-widget-container > button {
   bottom: var(--chat-bottom-offset) !important;
   z-index: 55 !important;
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+/* Make the chat container itself visible but don't force bottom position */
+#bp-web-widget-container,
+#bp-web-widget,
+[id^="bp-web-widget"],
+[id*="bp-web-widget"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 55 !important;
 }
