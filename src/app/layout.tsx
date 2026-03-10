@@ -85,6 +85,7 @@ export default function RootLayout({
                   botId: '8cce7ded-3a93-4864-8d1d-9056fd550424',
                   clientId: 'ebbb9b25-3afa-4153-a0e3-84e5e0c3a389',
                   showLauncher: false,
+                  hideWidget: false,
                   configuration: {
                     version: 'v2',
                     composerPlaceholder: 'Pose ta question',
@@ -110,9 +111,20 @@ export default function RootLayout({
                     proactiveBubbleTriggerType: 'afterDelay',
                     proactiveBubbleDelayTime: 10,
                     conversationHistory: false,
-                    showLauncher: false
+                    showLauncher: false,
+                    hideWidget: false
                   }
                 });
+
+                // Compatibility path: some runtimes expose botpressWebChat API.
+                if (window.botpressWebChat && typeof window.botpressWebChat.init === 'function') {
+                  window.botpressWebChat.init({
+                    botId: '8cce7ded-3a93-4864-8d1d-9056fd550424',
+                    clientId: 'ebbb9b25-3afa-4153-a0e3-84e5e0c3a389',
+                    showLauncher: false,
+                    hideWidget: false
+                  });
+                }
 
                 function lockNativeLauncherOff() {
                   if (!window.botpress || typeof window.botpress.config !== 'function') {
@@ -147,24 +159,51 @@ export default function RootLayout({
                   }
                 }
 
+                function forceNativeWidgetBottom() {
+                  var selectors = [
+                    '#bp-webchat',
+                    '.bp-widget-widget',
+                    '.bpContainer',
+                    '[id^="bp-webchat"]',
+                    'iframe[name="bp-webchat"]',
+                    'iframe[src*="botpress"]',
+                    'iframe[src*="bpcontent.cloud"]',
+                    'iframe[src*="cdn.botpress.cloud"]'
+                  ];
+
+                  selectors.forEach(function(selector) {
+                    document.querySelectorAll(selector).forEach(function(el) {
+                      var isDesktop = window.matchMedia('(min-width: 768px)').matches;
+                      el.style.setProperty('bottom', isDesktop ? '24px' : '100px', 'important');
+                      el.style.setProperty('right', '12px', 'important');
+                      el.style.setProperty('z-index', '60', 'important');
+                    });
+                  });
+                }
+
                 lockNativeLauncherOff();
+                forceNativeWidgetBottom();
 
                 if (typeof window.botpress.on === 'function') {
                   window.botpress.on('webchat:initialized', lockNativeLauncherOff);
+                  window.botpress.on('webchat:initialized', forceNativeWidgetBottom);
                   window.botpress.on('webchat:ready', function() {
                     lockNativeLauncherOff();
+                    forceNativeWidgetBottom();
                     // On ready, immediately hide the launcher with event
                     if (typeof window.botpress.sendEvent === 'function') {
                       window.botpress.sendEvent({ type: 'hide' });
                     }
                   });
                   window.botpress.on('webchat:opened', lockNativeLauncherOff);
+                  window.botpress.on('webchat:opened', forceNativeWidgetBottom);
                 }
 
                 var lockTries = 0;
                 var lockTimer = setInterval(function() {
                   lockTries += 1;
                   lockNativeLauncherOff();
+                  forceNativeWidgetBottom();
                   if (lockTries > 40) {
                     clearInterval(lockTimer);
                   }
