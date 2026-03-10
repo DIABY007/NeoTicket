@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { Suspense } from "react";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { GlobalPlatformNav } from "@/components/app/global-platform-nav";
 import { Poppins, Geist_Mono } from "next/font/google";
@@ -78,7 +79,9 @@ export default function RootLayout({
       >
         <AuthProvider>
           {children}
-          <GlobalPlatformNav />
+          <Suspense fallback={null}>
+            <GlobalPlatformNav />
+          </Suspense>
           <PwaRegister />
         </AuthProvider>
       </body>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 function itemClass(isActive: boolean) {
   return `flex min-w-[72px] flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium transition ${
@@ -47,18 +47,18 @@ function IconUser() {
 
 export function GlobalPlatformNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  // The home page ("/") uses its own inline navbar inside MainHomeShell
-  // to handle client-side tab switching (feed / profile).
-  if (pathname === "/") {
-    return null;
-  }
+  const isHome = pathname === "/";
+  const tab = searchParams.get("tab");
+  const isProfileTab = isHome && tab === "profile";
+  const isFeedTab = isHome && tab !== "profile";
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-black/6 bg-white/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-around px-2 py-2">
         {/* Use <a> (not <Link>) to force a full page reload so SSR data is fresh */}
-        <a href="/" className={itemClass(false)}>
+        <a href="/" className={itemClass(isFeedTab)}>
           <IconHome />
           Evenements
         </a>
@@ -73,7 +73,7 @@ export function GlobalPlatformNav() {
           Scanner
         </Link>
 
-        <a href="/?tab=profile" className={itemClass(false)}>
+        <a href="/?tab=profile" className={itemClass(isProfileTab)}>
           <IconUser />
           Profil
         </a>
