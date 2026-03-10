@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
 };
 
-/* build-version: 2026-03-10T04 — force chunk hash invalidation */
+/* build-version: 2026-03-10T05 — force chunk hash invalidation */
 export default function RootLayout({
   children,
 }: Readonly<{

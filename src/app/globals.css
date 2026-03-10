@@ -146,7 +146,12 @@ body {
 /* Botpress: use official class names from docs for stable positioning. */
 
 /* Hide Botpress native floating button: we use our own launcher button. */
-.bpFabWrapper {
+.bpFabWrapper,
+[class*="bpFabWrapper"],
+[class*="bpFabButton"],
+[class*="bpFab"],
+[class*="fabButton"],
+[class*="FabButton"] {
   display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
@@ -154,7 +159,9 @@ body {
 }
 
 /* Keep the opened chat window above the bottom navbar. */
-.bpWebchat {
+.bpWebchat,
+[class*="bpWebchat"],
+[class*="webchat"] {
   bottom: 104px !important;
   right: 12px !important;
   z-index: 2147483000 !important;
