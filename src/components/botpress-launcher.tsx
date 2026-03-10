@@ -46,6 +46,8 @@ export function BotpressLauncher() {
           el.style.setProperty("visibility", "hidden", "important");
           el.style.setProperty("opacity", "0", "important");
           el.style.setProperty("pointer-events", "none", "important");
+          el.style.setProperty("height", "0", "important");
+          el.style.setProperty("width", "0", "important");
         });
       });
 
@@ -65,8 +67,28 @@ export function BotpressLauncher() {
             iframe.style.setProperty("visibility", "hidden", "important");
             iframe.style.setProperty("opacity", "0", "important");
             iframe.style.setProperty("pointer-events", "none", "important");
+            iframe.style.setProperty("height", "0", "important");
+            iframe.style.setProperty("width", "0", "important");
           }
         });
+
+      // Nuclear option: Kill any fixed/absolute button that looks like a launcher
+      // (positioned at bottom-right, sized like a button, not our custom launcher)
+      const potentialLaunchers = document.querySelectorAll('button[style*="fixed"], button[style*="absolute"], div[style*="fixed"][style*="bottom"], div[style*="absolute"][style*="bottom"]');
+      potentialLaunchers.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        const style = window.getComputedStyle(el);
+        const isBottomRight = rect.right >= window.innerWidth - 200 && rect.bottom >= window.innerHeight - 150;
+        const isSmallish = rect.width > 20 && rect.width < 150 && rect.height > 20 && rect.height < 150;
+        const isFixed = style.position === "fixed" || style.position === "absolute";
+        const isNotOurButton = !el.classList.contains("neo-launcher") && el.tagName !== "BUTTON"; // Exclude our custom button
+
+        if (isFixed && isBottomRight && isSmallish && isNotOurButton && el.id !== "bp-web-widget") {
+          (el as HTMLElement).style.display = "none";
+          (el as HTMLElement).style.visibility = "hidden";
+          (el as HTMLElement).style.pointerEvents = "none";
+        }
+      });
     };
 
     const check = () => {
@@ -128,7 +150,7 @@ export function BotpressLauncher() {
       onClick={() => {
         openChat();
       }}
-      className="fixed bottom-[104px] right-3 z-[2147483001] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg ring-2 ring-white/80 transition hover:bg-emerald-600 active:scale-95"
+      className="neo-launcher fixed bottom-[104px] right-3 z-[2147483001] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg ring-2 ring-white/80 transition hover:bg-emerald-600 active:scale-95"
       aria-label="Ouvrir le chat"
       title={isReady ? "Discuter avec NeoTicket" : "Initialisation du chat..."}
       aria-disabled={!isReady}

@@ -126,13 +126,38 @@ export default function RootLayout({
                       showLauncher: false,
                     },
                   });
+
+                  // Nuclear option: send hide event if available
+                  if (typeof window.botpress.sendEvent === 'function') {
+                    window.botpress.sendEvent({ type: 'hide' });
+                  }
+
+                  // Try to inject CSS into chat iframe if it exists
+                  try {
+                    var iframes = document.querySelectorAll('iframe[name="bp-webchat"], iframe[src*="botpress"]');
+                    iframes.forEach(function(iframe) {
+                      if (iframe.contentDocument) {
+                        var style = iframe.contentDocument.createElement('style');
+                        style.innerHTML = '.bpw-launcher { display: none !important; } .bpFabWrapper { display: none !important; }';
+                        iframe.contentDocument.head.appendChild(style);
+                      }
+                    });
+                  } catch (e) {
+                    // If cross-origin, this will fail - that's expected
+                  }
                 }
 
                 lockNativeLauncherOff();
 
                 if (typeof window.botpress.on === 'function') {
                   window.botpress.on('webchat:initialized', lockNativeLauncherOff);
-                  window.botpress.on('webchat:ready', lockNativeLauncherOff);
+                  window.botpress.on('webchat:ready', function() {
+                    lockNativeLauncherOff();
+                    // On ready, immediately hide the launcher with event
+                    if (typeof window.botpress.sendEvent === 'function') {
+                      window.botpress.sendEvent({ type: 'hide' });
+                    }
+                  });
                   window.botpress.on('webchat:opened', lockNativeLauncherOff);
                 }
 

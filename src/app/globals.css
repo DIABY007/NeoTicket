@@ -143,7 +143,25 @@ body {
   animation: toast-in 0.25s ease-out;
 }
 
-/* Botpress: use official class names from docs for stable positioning. */
+/* Botpress: Advanced suppression strategy for v3.6 (CSS Override Level 0) */
+
+/* Hide iframes by source signature (very effective on Mobile) */
+iframe[src*="botpress"],
+iframe[src*="bpcontent.cloud"],
+iframe[src*="cdn.botpress"],
+#bp-webchat-container + iframe,
+div[class*="bpw-launcher"],
+button[class*="bpw-launcher"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  max-height: 0 !important;
+  max-width: 0 !important;
+  border: none !important;
+}
 
 /* Hide Botpress native floating button: we use our own launcher button. */
 .bpFabWrapper,
@@ -154,11 +172,15 @@ body {
 [class*="bpwLauncher"],
 [class*="launcher"],
 [class*="fabButton"],
-[class*="FabButton"] {
+[class*="FabButton"],
+[role="button"][class*="launcher"],
+button[class*="bpFab"] {
   display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
 }
 
 /* Keep the opened chat window above the bottom navbar. */
