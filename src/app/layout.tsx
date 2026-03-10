@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
 };
 
-/* build-version: 2026-03-10T06 — force chunk hash invalidation */
+/* build-version: 2026-03-10T07 — force chunk hash invalidation */
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -112,6 +112,38 @@ export default function RootLayout({
                     showLauncher: false
                   }
                 });
+
+                function lockLauncherOff() {
+                  if (!window.botpress || typeof window.botpress.config !== 'function') {
+                    return;
+                  }
+                  window.botpress.config({
+                    configuration: {
+                      showLauncher: false
+                    }
+                  });
+                }
+
+                lockLauncherOff();
+
+                if (typeof window.botpress.on === 'function') {
+                  window.botpress.on('webchat:initialized', function() {
+                    lockLauncherOff();
+                  });
+                  window.botpress.on('webchat:opened', function() {
+                    lockLauncherOff();
+                  });
+                }
+
+                // Some environments re-apply remote config after init; lock it again.
+                var lockTries = 0;
+                var lockTimer = setInterval(function() {
+                  lockTries += 1;
+                  lockLauncherOff();
+                  if (lockTries > 20) {
+                    clearInterval(lockTimer);
+                  }
+                }, 500);
 
                 window.__neoBotpressInitialized = true;
                 return true;

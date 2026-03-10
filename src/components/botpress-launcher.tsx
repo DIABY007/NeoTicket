@@ -79,7 +79,8 @@ export function BotpressLauncher() {
       onClick={() => {
         openChat();
       }}
-      className="fixed bottom-[104px] right-3 z-[2147483001] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg ring-2 ring-white/80 transition hover:bg-emerald-600 active:scale-95"
+      className="fixed right-3 z-[2147483001] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg ring-2 ring-white/80 transition hover:bg-emerald-600 active:scale-95"
+      style={{ bottom: "var(--chat-offset)" }}
       aria-label="Ouvrir le chat"
       title={isReady ? "Discuter avec NeoTicket" : "Initialisation du chat..."}
       aria-disabled={!isReady}

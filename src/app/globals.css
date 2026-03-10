@@ -7,6 +7,8 @@
   --neo-green: #84cc16;
   --neo-gradient: linear-gradient(135deg, #0d9488 0%, #84cc16 100%);
   --neo-gradient-subtle: linear-gradient(135deg, rgba(13,148,136,0.08) 0%, rgba(132,204,22,0.08) 100%);
+  --navbar-height: 72px;
+  --chat-offset: calc(var(--navbar-height) + 12px);
 }
 
 @theme inline {
@@ -167,7 +169,12 @@ body {
 #bp-web-widget,
 #bp-webchat,
 [id*="bp-web-widget"] {
-  bottom: 104px !important;
+  bottom: var(--chat-offset) !important;
   right: 12px !important;
   z-index: 2147483000 !important;
+}
+
+/* Keep navbar interaction always above any stray third-party button. */
+.global-platform-nav {
+  z-index: 2147483600 !important;
 }
