@@ -72,6 +72,74 @@ export default function RootLayout({
           src="https://files.bpcontent.cloud/2026/03/10/03/20260310031010-SG3OZF6G.js"
           strategy="afterInteractive"
         />
+        {/* Push Botpress FAB above fixed navbar on all devices */}
+        <Script id="botpress-position-fix" strategy="afterInteractive">
+          {`
+            (function() {
+              var FAB_BOTTOM = 72;
+              var applied = false;
+
+              function applyToEl(el) {
+                if (!el || el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+                el.style.setProperty('bottom', FAB_BOTTOM + 'px', 'important');
+                el.style.setProperty('z-index', '9999', 'important');
+                el.style.setProperty('visibility', 'visible', 'important');
+                el.style.setProperty('opacity', '1', 'important');
+                applied = true;
+              }
+
+              function tryFix() {
+                // Known Botpress v3 container IDs / element names
+                var candidates = [
+                  document.getElementById('bp-web-widget'),
+                  document.getElementById('bp-webchat'),
+                  document.getElementById('botpress-webchat'),
+                  document.getElementById('bp-web-widget-container'),
+                  document.querySelector('bp-webchat'),
+                  document.querySelector('[class*="bpWidget"]'),
+                  document.querySelector('[class*="bpFab"]'),
+                  document.querySelector('[class*="FabButton"]'),
+                  document.querySelector('[class*="fabButton"]'),
+                ];
+                candidates.forEach(function(el) {
+                  if (el) applyToEl(el);
+                });
+              }
+
+              // Poll until found (Botpress loads asynchronously)
+              var attempts = 0;
+              var timer = setInterval(function() {
+                tryFix();
+                if (applied || ++attempts >= 30) clearInterval(timer);
+              }, 500);
+
+              // Also use MutationObserver in case Botpress is added later
+              var observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(m) {
+                  m.addedNodes.forEach(function(node) {
+                    if (node.nodeType !== 1) return;
+                    var id = (node.id || '').toLowerCase();
+                    var tag = (node.tagName || '').toLowerCase();
+                    if (id.includes('bp') || id.includes('botpress') || tag === 'bp-webchat') {
+                      applyToEl(node);
+                    }
+                  });
+                });
+              });
+              observer.observe(document.body, { childList: true });
+
+              // Hook into Botpress ready event if available
+              var bpCheck = setInterval(function() {
+                if (window.botpress && typeof window.botpress.on === 'function') {
+                  clearInterval(bpCheck);
+                  window.botpress.on('webchat:ready', tryFix);
+                  window.botpress.on('ready', tryFix);
+                }
+              }, 300);
+              setTimeout(function() { clearInterval(bpCheck); }, 15000);
+            })();
+          `}
+        </Script>
       </head>
       <body
         className={`${poppins.variable} ${geistMono.variable} antialiased pb-20`}

@@ -143,30 +143,24 @@ body {
   animation: toast-in 0.25s ease-out;
 }
 
-/* Keep Botpress launcher above fixed bottom navbar and always visible. */
-:root {
-  --chat-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 72px);
-}
+/* Keep Botpress launcher above fixed bottom navbar — CSS fallback for known selectors.
+   The JS script in layout.tsx handles runtime detection for all other cases. */
 
-/* Only push the FAB button up above the navbar — not the full chat panel */
+#bp-web-widget,
+#bp-web-widget-container,
+#bp-webchat,
+#botpress-webchat,
+bp-webchat,
+[id*="bp-web-widget"],
+[class*="bpWidget"],
 [class*="bpFab"],
 [class*="bp-fab"],
-[id*="bp-web-widget"] > [class*="Fab"],
-[id*="bp-web-widget"] > [class*="fab"],
-[id*="bp-web-widget"] > button:last-child,
-#bp-web-widget-container > button {
-  bottom: var(--chat-bottom-offset) !important;
-  z-index: 55 !important;
-  opacity: 1 !important;
+[class*="FabButton"],
+[class*="fabButton"],
+[class*="FabWrapper"],
+[class*="fabWrapper"] {
+  bottom: 72px !important;
+  z-index: 9999 !important;
   visibility: visible !important;
-}
-
-/* Make the chat container itself visible but don't force bottom position */
-#bp-web-widget-container,
-#bp-web-widget,
-[id^="bp-web-widget"],
-[id*="bp-web-widget"] {
   opacity: 1 !important;
-  visibility: visible !important;
-  z-index: 55 !important;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 function itemClass(isActive: boolean) {
@@ -47,12 +48,21 @@ function IconUser() {
 
 export function GlobalPlatformNav() {
   const pathname = usePathname();
+  // Read ?tab= client-side to avoid useSearchParams/Suspense issues
+  const [tab, setTab] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTab(new URLSearchParams(window.location.search).get("tab"));
+  }, [pathname]);
+
+  const isEventsActive = pathname === "/" && tab !== "profile";
+  const isProfileActive = pathname === "/" && tab === "profile";
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-black/6 bg-white/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-around px-2 py-2">
-        {/* Use <a> (not <Link>) to force a full page reload so SSR data is fresh */}
-        <a href="/" className={itemClass(pathname === "/")}>
+        {/* Use <a> to force full page reload so SSR data is fresh */}
+        <a href="/" className={itemClass(isEventsActive)}>
           <IconHome />
           Evenements
         </a>
@@ -67,7 +77,7 @@ export function GlobalPlatformNav() {
           Scanner
         </Link>
 
-        <a href="/?tab=profile" className={itemClass(false)}>
+        <a href="/?tab=profile" className={itemClass(isProfileActive)}>
           <IconUser />
           Profil
         </a>
