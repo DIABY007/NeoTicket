@@ -145,14 +145,20 @@ body {
 
 /* Keep Botpress launcher above fixed bottom navbar and always visible. */
 :root {
-  --chat-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 86px);
+  --chat-bottom-offset: calc(env(safe-area-inset-bottom, 0px) + 132px);
 }
 
 #bp-web-widget-container,
 #bp-web-widget,
 [id^="bp-web-widget"],
+[id*="bp-web-widget"],
+[class*="bpWebchat"],
 [class*="bpFab"],
-[class*="bp-fab"] {
+[class*="bp-fab"],
+#bp-web-widget-container iframe,
+#bp-web-widget iframe,
+[id^="bp-web-widget"] iframe,
+[id*="bp-web-widget"] iframe {
   bottom: var(--chat-bottom-offset) !important;
   z-index: 55 !important;
   opacity: 1 !important;
