@@ -160,24 +160,33 @@ export default function RootLayout({
                 }
 
                 function forceNativeWidgetBottom() {
-                  var selectors = [
-                    '#bp-webchat',
-                    '.bp-widget-widget',
-                    '.bpContainer',
-                    '[id^="bp-webchat"]',
-                    'iframe[name="bp-webchat"]',
-                    'iframe[src*="botpress"]',
-                    'iframe[src*="bpcontent.cloud"]',
-                    'iframe[src*="cdn.botpress.cloud"]'
-                  ];
+                  // Target ALL iframes on the page
+                  var iframes = document.querySelectorAll('iframe');
+                  iframes.forEach(function(iframe) {
+                    if (iframe.src && (iframe.src.includes('botpress') || iframe.id.includes('bp-'))) {
+                      iframe.style.setProperty('bottom', '110px', 'important');
+                      iframe.style.setProperty('right', '12px', 'important');
+                      iframe.style.setProperty('z-index', '60', 'important');
+                      iframe.style.setProperty('transform', 'translateY(-20px)', 'important');
+                    }
+                  });
 
-                  selectors.forEach(function(selector) {
-                    document.querySelectorAll(selector).forEach(function(el) {
-                      var isDesktop = window.matchMedia('(min-width: 768px)').matches;
-                      el.style.setProperty('bottom', isDesktop ? '24px' : '100px', 'important');
-                      el.style.setProperty('right', '12px', 'important');
+                  // Target shadow-root potential containers
+                  var botpressHost = document.querySelector('#bp-webchat-container');
+                  if (botpressHost) {
+                    botpressHost.style.setProperty('bottom', '110px', 'important');
+                    botpressHost.style.setProperty('right', '12px', 'important');
+                    botpressHost.style.setProperty('z-index', '60', 'important');
+                    botpressHost.style.setProperty('transform', 'translateY(-20px)', 'important');
+                  }
+
+                  // Also target all divs that start with 'bp-'
+                  var allBpDivs = document.querySelectorAll('[class*="bp-"], [id*="bp-"]');
+                  allBpDivs.forEach(function(el) {
+                    if (el.style && el.parentNode && el.parentNode.nodeName !== 'IFRAME') {
+                      el.style.setProperty('bottom', '110px', 'important');
                       el.style.setProperty('z-index', '60', 'important');
-                    });
+                    }
                   });
                 }
 

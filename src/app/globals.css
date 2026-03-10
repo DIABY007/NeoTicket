@@ -230,3 +230,13 @@ iframe[src*="botpress"],
 .bpFabWrapper {
   bottom: calc(100px + env(safe-area-inset-bottom)) !important;
 }
+
+/* On cible absolument TOUT ce qui pourrait être injecté par Botpress */
+div[class*="bp-"],
+div[id*="bp-"],
+iframe[src*="botpress"],
+.bpFabWrapper,
+#bp-webchat-container {
+  bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+  transform: translateY(-20px) !important; /* Petit boost supplémentaire */
+}
