@@ -59,7 +59,7 @@ export function GlobalPlatformNav() {
   const isProfileActive = pathname === "/" && tab === "profile";
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-[999999] border-t border-black/6 bg-white/95 backdrop-blur">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-black/6 bg-white/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-around px-2 py-2">
         {/* Use <a> to force full page reload so SSR data is fresh */}
         <a href="/" className={itemClass(isEventsActive)}>
