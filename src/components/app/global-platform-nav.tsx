@@ -48,24 +48,20 @@ function IconUser() {
 export function GlobalPlatformNav() {
   const pathname = usePathname();
 
-  const hasDedicatedIconNav =
-    pathname === "/" ||
-    pathname === "/organizer/new" ||
-    pathname === "/scanner/scan" ||
-    /^\/organizer\/events\/[^/]+\/edit$/.test(pathname);
-
-  // Hide this global nav when the page already renders its own icon nav.
-  if (hasDedicatedIconNav) {
+  // The home page ("/") uses its own inline navbar inside MainHomeShell
+  // to handle client-side tab switching (feed / profile).
+  if (pathname === "/") {
     return null;
   }
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-black/6 bg-white/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-5xl items-center justify-around px-2 py-2">
-        <Link href="/" className={itemClass(pathname === "/")}>
+        {/* Use <a> (not <Link>) to force a full page reload so SSR data is fresh */}
+        <a href="/" className={itemClass(false)}>
           <IconHome />
           Evenements
-        </Link>
+        </a>
 
         <Link href="/organizer/new" className={itemClass(pathname === "/organizer/new")}>
           <IconPlus />
@@ -77,10 +73,10 @@ export function GlobalPlatformNav() {
           Scanner
         </Link>
 
-        <Link href="/?tab=profile" className={itemClass(false)}>
+        <a href="/?tab=profile" className={itemClass(false)}>
           <IconUser />
           Profil
-        </Link>
+        </a>
       </div>
     </nav>
   );

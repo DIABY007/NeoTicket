@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
@@ -8,24 +7,6 @@ import { ScannerCameraPanel } from "@/components/scanner/scanner-camera-panel";
 import { ScannerManagement } from "@/components/organizer/scanner-management";
 
 /* ── Icons ──────────────────────────────────────────────────── */
-
-function IconHome() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <path d="M3 10.5 12 3l9 7.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M6 9.5V21h12V9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function IconPlus() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function IconScan() {
   return (
@@ -210,42 +191,6 @@ export default function ScannerPage() {
         )}
       </div>
 
-      {/* ── Bottom nav ──────────────────────────────────────── */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-neutral-950/95 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-lg items-center justify-around px-2 py-2">
-          <Link
-            href="/"
-            className="flex min-w-[72px] flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs text-white/50"
-          >
-            <IconHome />
-            Événements
-          </Link>
-
-          <Link
-            href="/organizer/new"
-            className="flex min-w-[72px] flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs text-white/50"
-          >
-            <IconPlus />
-            Ajouter
-          </Link>
-
-          <Link
-            href="/scanner/scan"
-            className="flex min-w-[72px] flex-col items-center gap-1 rounded-xl bg-white px-3 py-2 text-xs text-black"
-          >
-            <IconScan />
-            Scanner
-          </Link>
-
-          <Link
-            href="/?tab=profile"
-            className="flex min-w-[72px] flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs text-white/50"
-          >
-            <IconUser />
-            Profil
-          </Link>
-        </div>
-      </nav>
     </main>
   );
 }
