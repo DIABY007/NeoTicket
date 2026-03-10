@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   },
 };
 
-/* build-version: 2026-03-10T05 — force chunk hash invalidation */
+/* build-version: 2026-03-10T06 — force chunk hash invalidation */
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -69,10 +69,68 @@ export default function RootLayout({
           src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"
           strategy="afterInteractive"
         />
-        <Script
-          src="https://files.bpcontent.cloud/2026/03/10/03/20260310031010-SG3OZF6G.js"
-          strategy="afterInteractive"
-        />
+        <Script id="botpress-init" strategy="afterInteractive">
+          {`
+            (function initBotpress() {
+              function start() {
+                if (!window.botpress || typeof window.botpress.init !== 'function') {
+                  return false;
+                }
+
+                if (window.__neoBotpressInitialized) {
+                  return true;
+                }
+
+                window.botpress.init({
+                  botId: '8cce7ded-3a93-4864-8d1d-9056fd550424',
+                  clientId: 'ebbb9b25-3afa-4153-a0e3-84e5e0c3a389',
+                  configuration: {
+                    version: 'v2',
+                    composerPlaceholder: 'Pose ta question',
+                    botName: 'Agent de Support NeoTicket',
+                    botAvatar: 'https://files.bpcontent.cloud/2026/03/10/03/20260310031152-5BHYAE77.png',
+                    botDescription: 'Repond a toutes vos preoccupations en rapport avec NeoTicket.',
+                    website: {},
+                    email: {},
+                    phone: {},
+                    termsOfService: {},
+                    privacyPolicy: {},
+                    color: '#19bf75',
+                    variant: 'solid',
+                    headerVariant: 'solid',
+                    themeMode: 'dark',
+                    fontFamily: 'inter',
+                    radius: 2.5,
+                    feedbackEnabled: false,
+                    footer: '[⚡ by Botpress](https://botpress.com/?from=webchat)',
+                    soundEnabled: false,
+                    proactiveMessageEnabled: false,
+                    proactiveBubbleMessage: 'Hi! Need help?',
+                    proactiveBubbleTriggerType: 'afterDelay',
+                    proactiveBubbleDelayTime: 10,
+                    conversationHistory: false,
+                    showLauncher: false
+                  }
+                });
+
+                window.__neoBotpressInitialized = true;
+                return true;
+              }
+
+              if (start()) {
+                return;
+              }
+
+              var tries = 0;
+              var timer = setInterval(function() {
+                tries += 1;
+                if (start() || tries > 60) {
+                  clearInterval(timer);
+                }
+              }, 250);
+            })();
+          `}
+        </Script>
       </head>
       <body
         className={`${poppins.variable} ${geistMono.variable} antialiased pb-20`}

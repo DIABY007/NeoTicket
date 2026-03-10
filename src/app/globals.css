@@ -150,6 +150,9 @@ body {
 [class*="bpFabWrapper"],
 [class*="bpFabButton"],
 [class*="bpFab"],
+[class*="bpw-launcher"],
+[class*="bpwLauncher"],
+[class*="launcher"],
 [class*="fabButton"],
 [class*="FabButton"] {
   display: none !important;
@@ -161,7 +164,9 @@ body {
 /* Keep the opened chat window above the bottom navbar. */
 .bpWebchat,
 [class*="bpWebchat"],
-[class*="webchat"] {
+#bp-web-widget,
+#bp-webchat,
+[id*="bp-web-widget"] {
   bottom: 104px !important;
   right: 12px !important;
   z-index: 2147483000 !important;
