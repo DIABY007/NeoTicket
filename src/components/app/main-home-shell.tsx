@@ -172,6 +172,22 @@ function formatDate(value: string | null) {
   });
 }
 
+function formatSourceStatus(status: OrganizerEvent["sourceStatus"]) {
+  if (status === "published") {
+    return "Publie";
+  }
+
+  if (status === "ended") {
+    return "Termine";
+  }
+
+  if (status === "cancelled") {
+    return "Annule";
+  }
+
+  return "Brouillon";
+}
+
 export function MainHomeShell({
   events,
   feedError,
@@ -745,24 +761,28 @@ export function MainHomeShell({
                                   </div>
                                   <span
                                     className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
-                                      event.lifecycleStatus === "en_cours"
+                                      event.sourceStatus === "published"
                                         ? "neo-badge-success"
-                                        : event.lifecycleStatus === "termine"
+                                        : event.sourceStatus === "ended"
                                           ? "bg-black/10 text-black/60"
-                                          : event.lifecycleStatus === "annule"
+                                          : event.sourceStatus === "cancelled"
                                             ? "bg-red-100 text-red-700"
                                             : "bg-amber-100 text-amber-800"
                                     }`}
                                   >
-                                    {event.lifecycleStatus === "en_cours"
-                                      ? "En cours"
-                                      : event.lifecycleStatus === "termine"
-                                        ? "Termine"
-                                        : event.lifecycleStatus === "annule"
-                                          ? "Annule"
-                                          : "Brouillon"}
+                                    {formatSourceStatus(event.sourceStatus)}
                                   </span>
                                 </div>
+
+                                <p className="mt-2 text-xs text-black/55">
+                                  Etat temporel: {event.lifecycleStatus === "en_cours"
+                                    ? "En cours"
+                                    : event.lifecycleStatus === "termine"
+                                      ? "Termine"
+                                      : event.lifecycleStatus === "annule"
+                                        ? "Annule"
+                                        : "Brouillon"}
+                                </p>
 
                                 {/* Compact fund indicators */}
                                 <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5 rounded-lg bg-black/[0.02] p-3 text-xs">

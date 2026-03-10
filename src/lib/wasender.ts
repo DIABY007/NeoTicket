@@ -22,10 +22,46 @@ type SendTicketInput = {
   qrLink?: string;
 };
 
+const WHATSAPP_MIN_DELAY_MS = 5_000;
+let whatsappSendQueue: Promise<void> = Promise.resolve();
+let lastWhatsAppAttemptAt = 0;
+
 function sleep(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
+}
+
+async function runWithWhatsAppThrottle<T>(operation: () => Promise<T>) {
+  let result: T | undefined;
+  let operationError: unknown;
+
+  const queueTask = async () => {
+    const now = Date.now();
+    const waitMs = Math.max(0, lastWhatsAppAttemptAt + WHATSAPP_MIN_DELAY_MS - now);
+
+    if (waitMs > 0) {
+      await sleep(waitMs);
+    }
+
+    try {
+      result = await operation();
+    } catch (error) {
+      operationError = error;
+    } finally {
+      // Rate-limit by attempt so retries also respect provider pacing.
+      lastWhatsAppAttemptAt = Date.now();
+    }
+  };
+
+  whatsappSendQueue = whatsappSendQueue.catch(() => undefined).then(queueTask);
+  await whatsappSendQueue;
+
+  if (operationError) {
+    throw operationError;
+  }
+
+  return result as T;
 }
 
 function isPublicUrl(url: string) {
@@ -43,93 +79,101 @@ function isPublicUrl(url: string) {
 }
 
 export async function sendWhatsAppTextMessage({ to, text }: SendTextInput) {
-  const apiUrl =
-    process.env.WASENDER_API_URL || "https://www.wasenderapi.com/api/send-message";
-  const apiKey = process.env.WASENDER_API_KEY;
+  await runWithWhatsAppThrottle(async () => {
+    const apiUrl =
+      process.env.WASENDER_API_URL || "https://www.wasenderapi.com/api/send-message";
+    const apiKey = process.env.WASENDER_API_KEY;
 
-  if (!apiKey) {
-    throw new Error("WASENDER_API_KEY is missing");
-  }
+    if (!apiKey) {
+      throw new Error("WASENDER_API_KEY is missing");
+    }
 
-  const response = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      to,
-      text,
-    }),
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        to,
+        text,
+      }),
+    });
+
+    const responseText = await response.text();
+    let payload: { success?: boolean; error?: string; message?: string } | null = null;
+    try {
+      payload = responseText
+        ? (JSON.parse(responseText) as { success?: boolean; error?: string; message?: string })
+        : null;
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Wasender request failed (${response.status}): ${responseText}`);
+    }
+
+    if (payload && payload.success === false) {
+      throw new Error(payload.error || payload.message || "Wasender rejected text message.");
+    }
   });
-
-  const responseText = await response.text();
-  let payload: { success?: boolean; error?: string; message?: string } | null = null;
-  try {
-    payload = responseText ? (JSON.parse(responseText) as { success?: boolean; error?: string; message?: string }) : null;
-  } catch {
-    payload = null;
-  }
-
-  if (!response.ok) {
-    throw new Error(`Wasender request failed (${response.status}): ${responseText}`);
-  }
-
-  if (payload && payload.success === false) {
-    throw new Error(payload.error || payload.message || "Wasender rejected text message.");
-  }
 }
 
 export async function sendWhatsAppImageMessage({ to, text, imageUrl }: SendImageInput) {
-  const apiUrl =
-    process.env.WASENDER_API_URL || "https://www.wasenderapi.com/api/send-message";
-  const apiKey = process.env.WASENDER_API_KEY;
+  await runWithWhatsAppThrottle(async () => {
+    const apiUrl =
+      process.env.WASENDER_API_URL || "https://www.wasenderapi.com/api/send-message";
+    const apiKey = process.env.WASENDER_API_KEY;
 
-  if (!apiKey) {
-    throw new Error("WASENDER_API_KEY is missing");
-  }
+    if (!apiKey) {
+      throw new Error("WASENDER_API_KEY is missing");
+    }
 
-  const response = await fetch(apiUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      to,
-      text,
-      imageUrl,
-    }),
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        to,
+        text,
+        imageUrl,
+      }),
+    });
+
+    const responseText = await response.text();
+    let payload:
+      | {
+          success?: boolean;
+          error?: string;
+          message?: string;
+          data?: { status?: string };
+          status?: string;
+        }
+      | null = null;
+    try {
+      payload = responseText
+        ? (JSON.parse(responseText) as { success?: boolean; error?: string; message?: string })
+        : null;
+    } catch {
+      payload = null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Wasender image request failed (${response.status}): ${responseText}`);
+    }
+
+    if (payload && payload.success === false) {
+      throw new Error(payload.error || payload.message || "Wasender rejected image message.");
+    }
+
+    const providerStatus = payload?.data?.status || payload?.status;
+    if (providerStatus && providerStatus.toLowerCase() === "failed") {
+      throw new Error("Wasender reported failed status for image message.");
+    }
   });
-
-  const responseText = await response.text();
-  let payload:
-    | {
-        success?: boolean;
-        error?: string;
-        message?: string;
-        data?: { status?: string };
-        status?: string;
-      }
-    | null = null;
-  try {
-    payload = responseText ? (JSON.parse(responseText) as { success?: boolean; error?: string; message?: string }) : null;
-  } catch {
-    payload = null;
-  }
-
-  if (!response.ok) {
-    throw new Error(`Wasender image request failed (${response.status}): ${responseText}`);
-  }
-
-  if (payload && payload.success === false) {
-    throw new Error(payload.error || payload.message || "Wasender rejected image message.");
-  }
-
-  const providerStatus = payload?.data?.status || payload?.status;
-  if (providerStatus && providerStatus.toLowerCase() === "failed") {
-    throw new Error("Wasender reported failed status for image message.");
-  }
 }
 
 export async function sendOtpWhatsApp({ to, code }: SendOtpInput) {
@@ -170,8 +214,6 @@ export async function sendTicketWhatsApp({
       );
     }
 
-    // Delay and retry reduce provider-side throttling when messages are sent too close.
-    await sleep(1800);
     try {
       await sendWhatsAppImageMessage({
         to,
@@ -180,7 +222,6 @@ export async function sendTicketWhatsApp({
       });
       return;
     } catch {
-      await sleep(2500);
       try {
         await sendWhatsAppImageMessage({
           to,

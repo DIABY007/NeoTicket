@@ -1,0 +1,62 @@
+Pour compléter tes CGU, la **Politique de Confidentialité** est le document qui rassure tes utilisateurs sur la gestion de leurs données (numéro WhatsApp, historique d'achat) tout en te protégeant légalement.
+
+C'est essentiel pour éviter qu'on t'accuse de "spam" ou de revente de données. Voici une version adaptée à **NeoTicket** :
+
+---
+
+## 🛡️ Politique de Confidentialité - NeoTicket.live
+
+**Dernière mise à jour :** Mars 2026
+
+### 1. Quelles données collectons-nous ?
+
+Pour fonctionner correctement, NeoTicket collecte uniquement les informations strictement nécessaires :
+
+* **Identité :** Nom et Prénom (pour le ticket).
+* **Contact :** Numéro WhatsApp (pour l'envoi du QR Code et les rappels).
+* **Transactions :** Preuves de paiement Orange Money (pour validation).
+* **Technique :** Cookies essentiels pour maintenir votre session ouverte sur la PWA.
+
+### 2. Pourquoi utilisons-nous vos données ?
+
+Vos données ne sont utilisées que pour les finalités suivantes :
+
+1. **Génération et livraison :** Vous envoyer vos tickets par WhatsApp.
+2. **Alertes Événements :** Vous envoyer des rappels automatiques (J-1, H-3) pour ne pas rater votre soirée.
+3. **Support Client :** Vous aider via NeoBot ou notre équipe humaine en cas de problème.
+4. **Sécurité :** Prévenir la fraude et les doubles scans de tickets.
+
+### 3. Partage des données (Le point crucial)
+
+* **Avec l'Organisateur :** Nous partageons uniquement la liste des noms des participants avec l'organisateur pour le contrôle à l'entrée. Votre numéro WhatsApp ne lui est **pas** communiqué pour du marketing direct, sauf si vous y consentez explicitement.
+* **Avec des tiers :** NeoTicket ne vend, ne loue, ni ne partage vos données personnelles à des agences de publicité ou des tiers.
+
+### 4. Conservation des données
+
+Nous conservons vos données tant que votre compte est actif. Les données relatives aux tickets achetés sont conservées pendant **24 mois** après l'événement pour des raisons de comptabilité et de preuve en cas de litige.
+
+### 5. Vos droits
+
+Conformément aux principes de protection des données, vous disposez d'un droit :
+
+* D'accès à vos données.
+* De rectification (si votre nom est mal orthographié).
+* De suppression (si vous souhaitez fermer votre compte NeoTicket).
+
+### 6. Sécurité des paiements
+
+NeoTicket ne stocke jamais vos codes secrets Orange Money. Les transactions sont effectuées directement via les protocoles sécurisés des opérateurs de téléphonie mobile.
+
+---
+
+### 💡 Mise en place technique pour toi
+
+1. **Lien dédié :** Place le lien `/privacy` à côté de celui des CGU dans ton footer.
+2. **Base de connaissance :** Si quelqu'un demande au NeoBot *"Que faites-vous de mon numéro ?"*, il doit pouvoir répondre : *"Nous utilisons votre numéro uniquement pour vous envoyer vos tickets et rappels. Nous ne revendons jamais vos données."*
+3. **Conformité PWA :** Assure-toi que ton application informe l'utilisateur de l'utilisation des cookies lors de la première installation.
+
+### Pourquoi cette version te protège ?
+
+Elle précise que le partage avec l'organisateur est limité au **contrôle d'accès**. Cela te dédouane si un utilisateur se plaint de recevoir des SMS de publicité de la part d'un organisateur : tu pourras prouver que tu n'as pas fourni les numéros.
+
+**Veux-tu que je te prépare un petit texte court (disclaimer) à afficher sous le bouton d'inscription pour résumer cette politique en deux lignes ?**

@@ -63,6 +63,14 @@ export default function RootLayout({
             gtag('config', 'G-WY9D4NBWCG');
           `}
         </Script>
+        <Script
+          src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"
+          strategy="afterInteractive"
+        />
+        <Script
+          src="https://files.bpcontent.cloud/2026/03/10/03/20260310031010-SG3OZF6G.js"
+          strategy="afterInteractive"
+        />
       </head>
       <body
         className={`${poppins.variable} ${geistMono.variable} antialiased pb-20`}

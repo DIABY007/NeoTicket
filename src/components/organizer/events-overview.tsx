@@ -23,7 +23,23 @@ function formatMoney(amount: number) {
   return new Intl.NumberFormat("fr-FR").format(amount) + " F CFA";
 }
 
-function formatStatus(status: DashboardEvent["lifecycleStatus"]) {
+function formatSourceStatus(status: DashboardEvent["sourceStatus"]) {
+  if (status === "published") {
+    return "Publie";
+  }
+
+  if (status === "ended") {
+    return "Termine";
+  }
+
+  if (status === "cancelled") {
+    return "Annule";
+  }
+
+  return "Brouillon";
+}
+
+function formatLifecycleStatus(status: DashboardEvent["lifecycleStatus"]) {
   if (status === "en_cours") {
     return "En cours";
   }
@@ -170,8 +186,12 @@ export function OrganizerEventsOverview({
                     <dd className="font-medium">{event.ticketsSold}</dd>
                   </div>
                   <div>
-                    <dt className="text-black/60">Statut</dt>
-                    <dd className="font-medium">{formatStatus(event.lifecycleStatus)}</dd>
+                    <dt className="text-black/60">Statut choisi</dt>
+                    <dd className="font-medium">{formatSourceStatus(event.sourceStatus)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-black/60">Cycle reel</dt>
+                    <dd className="font-medium">{formatLifecycleStatus(event.lifecycleStatus)}</dd>
                   </div>
                   <div>
                     <dt className="text-black/60">Fonds</dt>
@@ -230,7 +250,8 @@ export function OrganizerEventsOverview({
                 <th className="px-2 py-2 font-medium">Reversement en attente</th>
                 <th className="px-2 py-2 font-medium">Deja reverse</th>
                 <th className="px-2 py-2 font-medium">Disponible</th>
-                <th className="px-2 py-2 font-medium">Statut</th>
+                <th className="px-2 py-2 font-medium">Statut choisi</th>
+                <th className="px-2 py-2 font-medium">Cycle reel</th>
                 <th className="px-2 py-2 font-medium">Action</th>
               </tr>
             </thead>
@@ -244,7 +265,8 @@ export function OrganizerEventsOverview({
                   <td className="px-2 py-3">{formatMoney(event.payoutPendingAmount)}</td>
                   <td className="px-2 py-3">{formatMoney(event.payoutPaidAmount)}</td>
                   <td className="px-2 py-3">{formatMoney(event.payoutRequestableAmount)}</td>
-                  <td className="px-2 py-3">{formatStatus(event.lifecycleStatus)}</td>
+                  <td className="px-2 py-3">{formatSourceStatus(event.sourceStatus)}</td>
+                  <td className="px-2 py-3">{formatLifecycleStatus(event.lifecycleStatus)}</td>
                   <td className="px-2 py-3">
                     <div className="flex flex-wrap gap-2">
                       <Link

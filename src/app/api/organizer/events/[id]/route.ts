@@ -165,6 +165,63 @@ export async function PATCH(
     status?: "draft" | "published" | "ended" | "cancelled";
   };
 
+  const { id } = await params;
+  const supabase = getSupabaseServerClient();
+  const isAdmin = roles.includes("admin");
+
+  const allowedStatus = ["draft", "published", "ended", "cancelled"];
+  const status = body.status;
+
+  const hasNonStatusPayload = [
+    body.title,
+    body.description,
+    body.city,
+    body.startDate,
+    body.endDate,
+    body.officialPrice,
+    body.organizerPrice,
+    body.isFreeEvent,
+    body.slug,
+  ].some((value) => value !== undefined);
+
+  if (!hasNonStatusPayload && status !== undefined) {
+    if (!allowedStatus.includes(status)) {
+      return NextResponse.json(
+        { success: false, error: "Statut evenement invalide." },
+        { status: 400 },
+      );
+    }
+
+    let statusOnlyQuery = supabase
+      .from("events")
+      .update({ status })
+      .eq("id", id)
+      .select("id, slug, organizer_id, title, description, city, date, end_date, price, official_price, organizer_price, status, image_url")
+      .limit(1);
+
+    if (!isAdmin) {
+      statusOnlyQuery = statusOnlyQuery.eq("organizer_id", auth.session.userId);
+    }
+
+    const { data, error } = await statusOnlyQuery.maybeSingle<EventRecord>();
+
+    if (error) {
+      return NextResponse.json(
+        { success: false, error: "Mise a jour du statut impossible." },
+        { status: 500 },
+      );
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        { success: false, error: "Evenement introuvable." },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ success: true, event: data });
+  }
+
   const title = String(body.title ?? "").trim();
   const description = String(body.description ?? "").trim();
   const city = String(body.city ?? "")
@@ -175,7 +232,6 @@ export async function PATCH(
   const officialPrice = Number(body.officialPrice ?? NaN);
   const organizerPrice = Number(body.organizerPrice ?? NaN);
   const requestedSlug = String(body.slug ?? "").trim();
-  const status = body.status;
 
   if (!title) {
     return NextResponse.json(
@@ -252,7 +308,6 @@ export async function PATCH(
     );
   }
 
-  const allowedStatus = ["draft", "published", "ended", "cancelled"];
   if (!status || !allowedStatus.includes(status)) {
     return NextResponse.json(
       { success: false, error: "Statut evenement invalide." },
@@ -260,8 +315,6 @@ export async function PATCH(
     );
   }
 
-  const { id } = await params;
-  const supabase = getSupabaseServerClient();
   const slug = await resolveUniqueSlug({
     supabase,
     requestedSlug,
@@ -277,8 +330,6 @@ export async function PATCH(
       { status: 400 },
     );
   }
-
-  const isAdmin = roles.includes("admin");
 
   let updateQuery = supabase
     .from("events")

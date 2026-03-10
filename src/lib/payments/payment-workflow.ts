@@ -3,6 +3,8 @@ import crypto from "node:crypto";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { sendTicketWhatsApp, sendWhatsAppTextMessage } from "@/lib/wasender";
 
+const NEOTICKET_REVIEW_URL = "https://g.page/r/CcZu12fzaltQEAE/review";
+
 type FinalizeSuccessInput = {
   transactionId: string;
   providerReference?: string;
@@ -103,6 +105,17 @@ export async function finalizeSuccessfulPayment(input: FinalizeSuccessInput) {
     throw new Error("Mise a jour ticket paid impossible.");
   }
 
+  const { data: previousBuyerPaidTicket, error: previousBuyerPaidTicketError } = await supabase
+    .from("tickets")
+    .select("id")
+    .eq("buyer_phone", transaction.buyer_phone)
+    .in("status", ["paid", "scanned"])
+    .neq("id", ticket.id)
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+
+  const isFirstBuyerPurchase = !previousBuyerPaidTicketError && !previousBuyerPaidTicket;
+
   // Increment promo code usage and affiliate sales count
   const { data: ticketTracking } = await supabase
     .from("tickets")
@@ -188,10 +201,50 @@ export async function finalizeSuccessfulPayment(input: FinalizeSuccessInput) {
     : null;
   const organizerPhone = organizerRecord?.phone ?? null;
 
+  let isFirstOrganizerSale = false;
+  if (event?.organizer_id) {
+    const { data: organizerEvents, error: organizerEventsError } = await supabase
+      .from("events")
+      .select("id")
+      .eq("organizer_id", event.organizer_id);
+
+    if (!organizerEventsError) {
+      const organizerEventIds = (organizerEvents ?? []).map((row) => row.id);
+      if (organizerEventIds.length > 0) {
+        const { data: previousOrganizerSale, error: previousOrganizerSaleError } = await supabase
+          .from("transactions")
+          .select("id")
+          .in("event_id", organizerEventIds)
+          .eq("status", "success")
+          .neq("id", transaction.id)
+          .limit(1);
+
+        if (!previousOrganizerSaleError) {
+          isFirstOrganizerSale = (previousOrganizerSale ?? []).length === 0;
+        }
+      }
+    }
+  }
+
+  if (isFirstBuyerPurchase) {
+    const buyerReviewMessage =
+      `🙏 Merci pour ton premier achat sur NeoTicket ! ` +
+      `Ton retour nous aide a ameliorer la plateforme. ` +
+      `Tu peux laisser un avis ici: ${NEOTICKET_REVIEW_URL}`;
+
+    try {
+      await sendWhatsAppTextMessage({ to: transaction.buyer_phone, text: buyerReviewMessage });
+    } catch {
+      // Optional follow-up message; ignore failures.
+    }
+  }
+
   if (organizerPhone) {
-    const organizerMessage =
-      `💰 Bonne nouvelle ! Une nouvelle place vient d'être vendue pour ton événement ` +
-      `${event?.title ?? "NeoTicket"}. On continue comme ça ! 🚀`;
+    const organizerMessage = isFirstOrganizerSale
+      ? `🎉 Felicitations ! Ta premiere vente vient d'etre realisee pour ${event?.title ?? "ton evenement"}. ` +
+        `Merci pour ta confiance. Si NeoTicket t'aide, laisse-nous un avis ici: ${NEOTICKET_REVIEW_URL}`
+      : `💰 Bonne nouvelle ! Une nouvelle place vient d'être vendue pour ton événement ` +
+        `${event?.title ?? "NeoTicket"}. On continue comme ça ! 🚀`;
 
     try {
       await sendWhatsAppTextMessage({ to: organizerPhone, text: organizerMessage });

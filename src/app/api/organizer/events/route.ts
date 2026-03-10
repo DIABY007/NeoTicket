@@ -8,8 +8,34 @@ import { buildMarketingSlug, normalizeEventSlug } from "@/lib/event-slug";
 import { normalizeRoles } from "@/lib/auth/roles";
 import { parseAppSessionToken } from "@/lib/auth/session";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { sendWhatsAppTextMessage } from "@/lib/wasender";
 
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const NEOTICKET_REVIEW_URL = "https://g.page/r/CcZu12fzaltQEAE/review";
+
+function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function resolvePublicBaseUrl(request: Request) {
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.APP_PUBLIC_URL,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+    new URL(request.url).origin,
+  ];
+
+  for (const candidate of candidates) {
+    const value = String(candidate ?? "").trim();
+    if (!value) continue;
+    return value.replace(/\/$/, "");
+  }
+
+  return undefined;
+}
 
 function sanitizeFilename(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9.-]/g, "-");
@@ -260,6 +286,15 @@ export async function POST(request: Request) {
       );
     }
 
+    const { data: previousEvent, error: previousEventError } = await supabase
+      .from("events")
+      .select("id")
+      .eq("organizer_id", session.userId)
+      .limit(1)
+      .maybeSingle<{ id: string }>();
+
+    const isFirstOrganizerEvent = !previousEventError && !previousEvent;
+
     const bucket = process.env.SUPABASE_STORAGE_EVENTS_BUCKET || "event-posters";
 
     const eventId = crypto.randomUUID();
@@ -321,6 +356,52 @@ export async function POST(request: Request) {
         { success: false, error: "Creation evenement impossible.", details: error.message },
         { status: 500 },
       );
+    }
+
+    if (isFirstOrganizerEvent) {
+      const { data: organizer } = await supabase
+        .from("users")
+        .select("phone, display_name")
+        .eq("id", session.userId)
+        .maybeSingle<{ phone: string | null; display_name: string | null }>();
+
+      if (organizer?.phone) {
+        const publicBaseUrl = resolvePublicBaseUrl(request);
+        const eventPublicUrl = `${publicBaseUrl ?? ""}/e/${data.slug}`;
+        const shareMessage =
+          `🚀 Ton evenement est en ligne ! Partage vite ce lien pour booster les ventes: ${eventPublicUrl}`;
+        const organizerName = organizer.display_name?.trim() || "champion";
+        const thankYouMessage =
+          `🎉 Bravo ${organizerName} ! Ton premier evenement (${data.title}) est en ligne sur NeoTicket. ` +
+          `Merci pour ta confiance. Si l'experience te plait, laisse-nous un avis ici: ${NEOTICKET_REVIEW_URL}`;
+
+        try {
+          await sendWhatsAppTextMessage({ to: organizer.phone, text: shareMessage });
+          await sleep(5000);
+          await sendWhatsAppTextMessage({ to: organizer.phone, text: thankYouMessage });
+        } catch {
+          // Optional gratitude/share messages; do not block event creation.
+        }
+      }
+    } else {
+      const { data: organizer } = await supabase
+        .from("users")
+        .select("phone")
+        .eq("id", session.userId)
+        .maybeSingle<{ phone: string | null }>();
+
+      if (organizer?.phone) {
+        const publicBaseUrl = resolvePublicBaseUrl(request);
+        const eventPublicUrl = `${publicBaseUrl ?? ""}/e/${data.slug}`;
+        const shareMessage =
+          `🚀 Ton evenement est en ligne ! Partage vite ce lien pour booster les ventes: ${eventPublicUrl}`;
+
+        try {
+          await sendWhatsAppTextMessage({ to: organizer.phone, text: shareMessage });
+        } catch {
+          // Optional share message; do not block event creation.
+        }
+      }
     }
 
     return NextResponse.json({
