@@ -1,3 +1,19 @@
+/* Botpress Portal Lockdown */
+#botpress-portal {
+  position: fixed !important;
+  bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+  right: 16px !important;
+  height: 60px !important;
+  width: 60px !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+#botpress-portal iframe {
+  position: relative !important;
+  bottom: 0 !important;
+  right: 0 !important;
+}
 @import "tailwindcss";
 
 :root {
