@@ -28,10 +28,32 @@ export function BotpressLauncher() {
   useEffect(() => {
     let mounted = true;
     let unsubscribe: (() => void) | undefined;
+    let observer: MutationObserver | undefined;
+
+    const hideNativeLauncherNodes = () => {
+      const selectors = [
+        ".bpFabWrapper",
+        '[class*="bpFabWrapper"]',
+        '[class*="bpFabButton"]',
+        '[class*="bpFab"]',
+        '[class*="bpw-launcher"]',
+        '[class*="bpwLauncher"]',
+      ];
+
+      selectors.forEach((selector) => {
+        document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+          el.style.setProperty("display", "none", "important");
+          el.style.setProperty("visibility", "hidden", "important");
+          el.style.setProperty("opacity", "0", "important");
+          el.style.setProperty("pointer-events", "none", "important");
+        });
+      });
+    };
 
     const check = () => {
       if (!mounted) return;
       setIsReady(isBotpressReady());
+      hideNativeLauncherNodes();
     };
 
     const bindEvents = () => {
@@ -43,6 +65,7 @@ export function BotpressLauncher() {
         if (mounted) {
           setIsReady(true);
         }
+        hideNativeLauncherNodes();
       }) as (() => void) | undefined;
     };
 
@@ -53,9 +76,16 @@ export function BotpressLauncher() {
     const fastStop = setTimeout(() => clearInterval(fast), 6000);
     const slow = setInterval(check, 2000);
 
+    // Catch late re-mounts of native launcher after SPA transitions.
+    observer = new MutationObserver(() => {
+      hideNativeLauncherNodes();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
     return () => {
       mounted = false;
       unsubscribe?.();
+      observer?.disconnect();
       clearInterval(fast);
       clearTimeout(fastStop);
       clearInterval(slow);

@@ -84,6 +84,7 @@ export default function RootLayout({
                 window.botpress.init({
                   botId: '8cce7ded-3a93-4864-8d1d-9056fd550424',
                   clientId: 'ebbb9b25-3afa-4153-a0e3-84e5e0c3a389',
+                  showLauncher: false,
                   configuration: {
                     version: 'v2',
                     composerPlaceholder: 'Pose ta question',
@@ -112,6 +113,37 @@ export default function RootLayout({
                     showLauncher: false
                   }
                 });
+
+                function lockNativeLauncherOff() {
+                  if (!window.botpress || typeof window.botpress.config !== 'function') {
+                    return;
+                  }
+
+                  // Keep both shapes for compatibility with Botpress runtime variants.
+                  window.botpress.config({ showLauncher: false });
+                  window.botpress.config({
+                    configuration: {
+                      showLauncher: false,
+                    },
+                  });
+                }
+
+                lockNativeLauncherOff();
+
+                if (typeof window.botpress.on === 'function') {
+                  window.botpress.on('webchat:initialized', lockNativeLauncherOff);
+                  window.botpress.on('webchat:ready', lockNativeLauncherOff);
+                  window.botpress.on('webchat:opened', lockNativeLauncherOff);
+                }
+
+                var lockTries = 0;
+                var lockTimer = setInterval(function() {
+                  lockTries += 1;
+                  lockNativeLauncherOff();
+                  if (lockTries > 40) {
+                    clearInterval(lockTimer);
+                  }
+                }, 500);
 
                 window.__neoBotpressInitialized = true;
                 return true;
