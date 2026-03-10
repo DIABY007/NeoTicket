@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { MainHomeShell } from "@/components/app/main-home-shell";
 import { computeFinalPrice, computeOrganizerDiscountPercent, resolvePlatformDiscountPercent } from "@/lib/pricing";
@@ -158,7 +159,9 @@ export default async function Home() {
       <h1 className="sr-only">
         NeoTicket — Billetterie en ligne au Burkina Faso
       </h1>
-      <MainHomeShell events={events} feedError={feedError} />
+      <Suspense fallback={null}>
+        <MainHomeShell events={events} feedError={feedError} />
+      </Suspense>
     </main>
   );
 }
