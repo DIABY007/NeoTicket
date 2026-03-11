@@ -15,9 +15,10 @@ declare global {
 }
 
 function isBotpressReady() {
+  // Nouvelle API Botpress WebChat
   return Boolean(
-    window.botpress &&
-      (typeof window.botpress.toggle === "function" || typeof window.botpress.open === "function"),
+    window.botpressWebChat &&
+      (typeof window.botpressWebChat.sendEvent === "function" || typeof window.botpressWebChat.toggle === "function")
   );
 }
 
@@ -154,7 +155,7 @@ export function BotpressLauncher() {
       title={isReady ? "Discuter avec NeoTicket" : "Initialisation du chat..."}
       aria-disabled={!isReady}
     >
-      <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true" style={{ opacity: isReady ? 1 : 0.5 }}>
         <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v7A2.5 2.5 0 0 1 17.5 15H10l-4.5 4v-4H6.5A2.5 2.5 0 0 1 4 12.5v-7Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
         <path d="M8 8.5h8M8 11.5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
       </svg>
