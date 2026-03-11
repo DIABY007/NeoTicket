@@ -1,18 +1,20 @@
-/* Botpress Portal Lockdown */
-#botpress-portal {
+/* Cible le conteneur principal injecté par Botpress */
+#bp-webchat-container, 
+#bp-webchat,
+.bp-widget-widget {
+  display: block !important;
+  visibility: visible !important;
   position: fixed !important;
-  bottom: calc(100px + env(safe-area-inset-bottom)) !important;
-  right: 16px !important;
-  height: 60px !important;
-  width: 60px !important;
+  /* On le monte au-dessus de la navbar (64px) + une marge (20px) + safe area */
+  bottom: calc(84px + env(safe-area-inset-bottom)) !important;
+  right: 20px !important;
   z-index: 9999 !important;
-  pointer-events: auto !important;
 }
 
-#botpress-portal iframe {
-  position: relative !important;
-  bottom: 0 !important;
-  right: 0 !important;
+/* Force l'affichage du bouton à l'intérieur s'il est caché */
+[class*="bpFab"] {
+  display: flex !important;
+  visibility: visible !important;
 }
 @import "tailwindcss";
 

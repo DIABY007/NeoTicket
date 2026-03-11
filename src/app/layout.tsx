@@ -73,16 +73,13 @@ export default function RootLayout({
           {`
             window.botpressWebChat = window.botpressWebChat || {};
             window.botpressWebChat.init && window.botpressWebChat.init({
-              composerPlaceholder: "Chat with us",
-              botConversationDescription: "NeoTicket Support",
               botId: "8cce7ded-3a93-4864-8d1d-9056fd550424",
               hostUrl: "https://cdn.botpress.cloud/webchat/v3",
               messagingUrl: "https://messaging.botpress.cloud",
               clientId: "ebbb9b25-3afa-4153-a0e3-84e5e0c3a389",
               showLauncher: true,
-              containerId: "botpress-portal",
               hideWidget: false,
-              lazy: true
+              className: "neo-custom-chat"
             });
           `}
         </Script>
@@ -96,8 +93,6 @@ export default function RootLayout({
           <BotpressLauncher />
           <PwaRegister />
         </AuthProvider>
-        {/* Botpress Portal Container */}
-        <div id="botpress-portal" className="fixed bottom-[120px] right-4 z-[9999]" />
       </body>
     </html>
   );
