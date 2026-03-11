@@ -1,10 +1,9 @@
-/* Décalage fiable du widget natif Botpress */
-#bp-webchat-container,
-.bp-widget-widget {
-  position: fixed !important;
-  bottom: calc(84px + env(safe-area-inset-bottom)) !important;
-  right: 20px !important;
-  z-index: 9999 !important;
+/* --- Botpress native widget kill switch --- */
+.bpFabWrapper, #bp-webchat-container [class*="bp-launcher"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 @import "tailwindcss";
 

@@ -138,23 +138,18 @@ export function BotpressLauncher() {
   }, [pathname]);
 
   const openChat = () => {
-    if (typeof window.botpress?.open === "function") {
-      window.botpress.open();
-      return;
-    }
-
-    if (typeof window.botpress?.toggle === "function") {
-      window.botpress.toggle();
+    if (typeof window.botpressWebChat?.sendEvent === "function") {
+      window.botpressWebChat.sendEvent({ type: "show" });
+    } else if (typeof window.botpressWebChat?.toggle === "function") {
+      window.botpressWebChat.toggle();
     }
   };
 
   return (
     <button
       type="button"
-      onClick={() => {
-        openChat();
-      }}
-      className="neo-launcher fixed right-4 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition-transform hover:scale-105 bottom-[calc(96px+env(safe-area-inset-bottom))] md:bottom-6"
+      onClick={openChat}
+      className="fixed right-4 z-[60] bottom-[calc(96px+env(safe-area-inset-bottom))] md:bottom-6 neo-launcher flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition-transform hover:scale-105"
       aria-label="Ouvrir le chat"
       title={isReady ? "Discuter avec NeoTicket" : "Initialisation du chat..."}
       aria-disabled={!isReady}

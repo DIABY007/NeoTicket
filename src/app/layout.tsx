@@ -88,7 +88,7 @@ export default function RootLayout({
               hostUrl: "https://cdn.botpress.cloud/webchat/v3",
               messagingUrl: "https://messaging.botpress.cloud",
               clientId: "ebbb9b25-3afa-4153-a0e3-84e5e0c3a389",
-              showLauncher: true,
+              showLauncher: false,
               hideWidget: false
             });
           `}
