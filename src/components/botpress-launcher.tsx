@@ -11,6 +11,11 @@ declare global {
       open?: () => void;
       on?: (event: string, handler: (...args: unknown[]) => void) => (() => void) | void;
     };
+    botpressWebChat?: {
+      sendEvent?: (event: { type: string }) => void;
+      toggle?: () => void;
+      init?: (options: unknown) => void;
+    };
   }
 }
 
