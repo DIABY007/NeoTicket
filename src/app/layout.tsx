@@ -65,6 +65,17 @@ export default function RootLayout({
             gtag('config', 'G-WY9D4NBWCG');
           `}
         </Script>
+      </head>
+      <body
+        className={`${poppins.variable} ${geistMono.variable} antialiased pb-20`}
+      >
+        <AuthProvider>
+          {children}
+          <GlobalPlatformNav />
+          <BotpressLauncher />
+          <PwaRegister />
+        </AuthProvider>
+        {/* Botpress scripts placés à la fin du body */}
         <Script
           src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"
           strategy="afterInteractive"
@@ -78,21 +89,10 @@ export default function RootLayout({
               messagingUrl: "https://messaging.botpress.cloud",
               clientId: "ebbb9b25-3afa-4153-a0e3-84e5e0c3a389",
               showLauncher: true,
-              hideWidget: false,
-              className: "neo-custom-chat"
+              hideWidget: false
             });
           `}
         </Script>
-      </head>
-      <body
-        className={`${poppins.variable} ${geistMono.variable} antialiased pb-20`}
-      >
-        <AuthProvider>
-          {children}
-          <GlobalPlatformNav />
-          <BotpressLauncher />
-          <PwaRegister />
-        </AuthProvider>
       </body>
     </html>
   );
