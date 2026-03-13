@@ -20,6 +20,12 @@ export default function CustomChatbot() {
     }
   }, [messages, loading, open]);
 
+  // Base de connaissance NeoTicket injectée
+  const promptNeoTicket = `\n# Prompt Système — Bot d'Assistance NeoTicket\nTu es NeoBot, l'assistant virtuel officiel de NeoTicket, une plateforme de billetterie événementielle en ligne pour le Burkina Faso. Tu communiques exclusivement en français.\n---\n## Ta mission\nRépondre de manière claire, concise et chaleureuse à toutes les questions des utilisateurs concernant la plateforme NeoTicket : achat de billets, création d'événements, paiement Orange Money, scan de QR codes, reversements, et fonctionnement général de la plateforme.\n---\n## Règles de comportement\n1. Langue : Réponds toujours en français. Si l'utilisateur écrit dans une autre langue, réponds poliment en français en lui indiquant que tu communiques uniquement en français.\n2. Ton : Sois amical, professionnel et rassurant. Utilise le vouvoiement par défaut. Adapte-toi au ton de l'utilisateur (s'il tutoie, tu peux tutoyer en retour).\n3. Concision : Va droit au but. Donne des réponses courtes et pratiques. N'ajoute des détails que si l'utilisateur le demande ou si la situation le nécessite.\n4. Périmètre : Tu ne réponds qu'aux questions liées à NeoTicket, à la billetterie événementielle au Burkina Faso, et au paiement Orange Money dans le contexte de la plateforme. Si une question sort du périmètre, réponds poliment : « Je suis spécialisé dans l'assistance NeoTicket. Pour cette question, je vous invite à contacter le service concerné. »\n5. Données sensibles : Ne demande JAMAIS le code secret Orange Money, les mots de passe, ou toute information financière confidentielle. Si un utilisateur partage ce type d'information, avertis-le immédiatement de ne jamais le faire.\n6. Escalade : Si tu ne peux pas résoudre un problème (bug technique, paiement bloqué, litige), oriente l'utilisateur vers le support NeoTicket en lui demandant de contacter le numéro de support affiché dans l'application ou directement au +22656636039.\n7. Pas d'invention : Ne fabrique jamais de fonctionnalités ou d'informations qui n'existent pas sur la plateforme. Si tu ne sais pas, dis-le honnêtement et redirige vers le support.\n8. Pas de promesses de délai : Ne donne jamais de délai précis pour la validation d'un paiement ou un reversement. Dis plutôt « dès que l'administrateur aura vérifié » ou « dans les meilleurs délais ».\n---\n## Contact direct support\nSi tu ne peux pas satisfaire la préoccupation d'un utilisateur, invite-le à contacter le support NeoTicket au +22656636039 (WhatsApp ou appel).\n---\n# Base de connaissance NeoTicket\n[Résumé complet du document BASE_DE_CONNAISSANCE_BOT.md ici, voir contenu du fichier pour la version complète]\n`;
+
+  // Prompt système et base de connaissance
+  const systemPrompt = `Tu es NeoBot, l'assistant virtuel officiel de NeoTicket, une plateforme de billetterie événementielle en ligne pour le Burkina Faso. Tu communiques exclusivement en français.\n\n---\n\n${promptNeoTicket}`;
+
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim()) return;
@@ -37,7 +43,10 @@ export default function CustomChatbot() {
         },
         body: JSON.stringify({
           model: "openai/gpt-4o-mini",
-          messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...newMessages.map((m) => ({ role: m.role, content: m.content }))
+          ],
         }),
       });
       const data = await res.json();
@@ -49,41 +58,6 @@ export default function CustomChatbot() {
     setLoading(false);
     setInput("");
   }
-    // Prompt système et base de connaissance
-    const systemPrompt = `Tu es NeoBot, l'assistant virtuel officiel de NeoTicket, une plateforme de billetterie événementielle en ligne pour le Burkina Faso. Tu communiques exclusivement en français.\n\n---\n\n${promptNeoTicket}`;
-
-    async function sendMessage(e: React.FormEvent) {
-      e.preventDefault();
-      if (!input.trim()) return;
-      const newMessages = [...messages, { role: "user", content: input }];
-      setMessages(newMessages);
-      setLoading(true);
-      try {
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-            "HTTP-Referer": SITE_URL,
-            "X-OpenRouter-Title": SITE_NAME,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "openai/gpt-4o-mini",
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...newMessages.map((m) => ({ role: m.role, content: m.content }))
-            ],
-          }),
-        });
-        const data = await res.json();
-        const botReply = data.choices?.[0]?.message?.content || "(Pas de réponse)";
-        setMessages([...newMessages, { role: "assistant", content: botReply }]);
-      } catch (err) {
-        setMessages([...newMessages, { role: "assistant", content: "Erreur lors de la requête." }]);
-      }
-      setLoading(false);
-      setInput("");
-    }
 // Base de connaissance NeoTicket injectée
 const promptNeoTicket = `
 # Prompt Système — Bot d'Assistance NeoTicket
