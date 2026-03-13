@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useRef, useEffect } from "react";
 
 const OPENROUTER_API_KEY = "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";

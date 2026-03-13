@@ -1,5 +1,4 @@
-import dynamic from "next/dynamic";
-const CustomChatbot = dynamic(() => import("@/components/CustomChatbot"), { ssr: false });
+import CustomChatbotClientWrapper from "@/components/CustomChatbotClientWrapper";
 import type { Metadata } from "next";
 import Script from "next/script";
 import { AuthProvider } from "@/components/auth/auth-provider";
@@ -74,7 +73,7 @@ export default function RootLayout({
           {children}
           <GlobalPlatformNav />
           <PwaRegister />
-          <CustomChatbot />
+          <CustomChatbotClientWrapper />
         </AuthProvider>
       </body>
     </html>
