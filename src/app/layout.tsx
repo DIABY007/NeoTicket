@@ -1,7 +1,8 @@
+import dynamic from "next/dynamic";
+const CustomChatbot = dynamic(() => import("@/components/CustomChatbot"), { ssr: false });
 import type { Metadata } from "next";
 import Script from "next/script";
 import { AuthProvider } from "@/components/auth/auth-provider";
-import { BotpressLauncher } from "@/components/botpress-launcher";
 import { GlobalPlatformNav } from "@/components/app/global-platform-nav";
 import { Poppins, Geist_Mono } from "next/font/google";
 import { PwaRegister } from "@/components/pwa-register";
@@ -72,27 +73,9 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <GlobalPlatformNav />
-          <BotpressLauncher />
           <PwaRegister />
+          <CustomChatbot />
         </AuthProvider>
-        {/* Botpress scripts placés à la fin du body */}
-        <Script
-          src="https://cdn.botpress.cloud/webchat/v3.6/inject.js"
-          strategy="afterInteractive"
-        />
-        <Script id="botpress-init" strategy="afterInteractive">
-          {`
-            window.botpressWebChat = window.botpressWebChat || {};
-            window.botpressWebChat.init && window.botpressWebChat.init({
-              botId: "8cce7ded-3a93-4864-8d1d-9056fd550424",
-              hostUrl: "https://cdn.botpress.cloud/webchat/v3",
-              messagingUrl: "https://messaging.botpress.cloud",
-              clientId: "ebbb9b25-3afa-4153-a0e3-84e5e0c3a389",
-              showLauncher: false,
-              hideWidget: false
-            });
-          `}
-        </Script>
       </body>
     </html>
   );
